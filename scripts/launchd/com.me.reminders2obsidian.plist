@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 每 30 分钟把 Apple 提醒 + 日历同步进 vault -->
+    <key>Label</key>
+    <string>com.me.reminders2obsidian</string>
+
+    <!-- 依次执行提醒同步 + 日历同步（注意把路径改成你的真实路径） -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/yiyangzhang/dsh/life-workflow-os/scripts/reminders2obsidian.sh</string>
+        <string>提醒事项</string>
+    </array>
+
+    <!-- 每 1800 秒执行一次 -->
+    <key>StartInterval</key>
+    <integer>1800</integer>
+
+    <!-- 日志 -->
+    <key>StandardOutPath</key>
+    <string>/tmp/com.me.reminders2obsidian.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/com.me.reminders2obsidian.err</string>
+</dict>
+</plist>

@@ -1,0 +1,38 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# 隐私/敏感数据（个人笔记默认不进公开仓库；如使用私有仓库可放开）
+# 建议：个人 vault 内容单独一个私有仓库，本仓库只放「系统/脚本/模板/文档」
+secrets.env
+.env
+*.key
+*.pem
+credentials*.json
+token*.json
+
+# Obsidian（提交插件/主题配置，但排除工作区状态与缓存；** 匹配根与 vault/ 下）
+**/.obsidian/workspace*.json
+**/.obsidian/cache
+.trash/
+
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 转换缓存（可重建，无需入库）
+.cache/
+converted/
+
+# 日志中可能含隐私；按需忽略，默认保留结构化日志但排除原始敏感字段
+logs/*.private.jsonl
+
+# 系统
+*.log
