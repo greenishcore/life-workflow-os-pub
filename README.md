@@ -78,4 +78,6 @@ python3 scripts/log_run.py --objective "做了什么" --status success
 - [x] 推送到 GitHub 私有仓库（`main` 分支）
 - [x] Phase 5 可视化看板（`scripts/dashboard.py` → `vault/Dashboard/index.html` + Obsidian Dataview/Kanban）
 - [x] notes-exporter 补装（`~/tools/notes-exporter`，v1.3.0 支持双向回写）
-- [ ] Phase 6 归档自动化收尾 + Phase 7 复盘/技能演进 — 待下一阶段
+- [x] Phase 6 归档自动化（`sync.sh`/`release.sh` + 看板 CI + 备份 workflow，已发布里程碑 v0.1.0）
+- [x] Phase 7 复盘/技能演进（`weekly_review.py` + `skills/` 库）
+- [ ] 持续迭代：周复盘跑起来、skills 随使用演进 — 由你日常驱动

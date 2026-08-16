@@ -75,22 +75,22 @@ Phase 7 演进 ◄── Phase 6 归档 ◄── Phase 5 可视化 ◄── Ph
 ## Phase 6 — 归档层：GitHub 版本归档与自动化
 
 **目标**：阶段性成果自动版本化 + 归档。
-- [ ] Obsidian Git / 定时脚本自动 commit + push
-- [ ] 里程碑 tag + release 约定
-- [ ] GitHub Actions：定时备份、生成文档、归档
+- [x] Obsidian Git / 定时脚本自动 commit + push → `scripts/sync.sh` + obsidian-git 插件（见 SETUP.md）
+- [x] 里程碑 tag + release 约定 → `scripts/release.sh`，已发布 v0.1.0
+- [x] GitHub Actions：定时备份、生成文档、归档 → `vault-backup.yml` + `generate-dashboard.yml`
 
-**交付物**：`.github/workflows/*.yml` + 归档约定。
-**验收**：笔记/文档改动自动进入版本历史，里程碑可回溯。
+**交付物**：`scripts/sync.sh`、`scripts/release.sh`、`.github/workflows/*.yml`。
+**验收**：笔记/文档改动自动进入版本历史，里程碑可回溯。（v0.1.0 已发布）
 
 ## Phase 7 — 演进层：skills 持续完善
 
 **目标**：把「复盘 → 提炼 → 迭代」变成常态机制。
-- [ ] 从 run-log 聚合经验，识别可复用的 skills
-- [ ] 周期性复盘（每周/每月）产出改进项
-- [ ] 提示词库与 skills 库版本化演进
+- [x] 从 run-log 聚合经验，识别可复用的 skills → `scripts/weekly_review.py`
+- [x] 周期性复盘（每周/每月）产出改进项 → `templates/weekly-review.md`
+- [x] 提示词库与 skills 库版本化演进 → `skills/`（README + 模板 + convert-document 示例）
 
-**交付物**：复盘报告 + 迭代后的 skills/提示词库。
-**验收**：每次迭代都让「提示词质量」与「执行可复现性」可度量提升。
+**交付物**：`scripts/weekly_review.py` + `skills/` 库 + 周复盘模板。
+**验收**：每次迭代都让「提示词质量」与「执行可复现性」可度量提升。（机制已就绪，由日常使用驱动）
 
 ---
 
