@@ -19,7 +19,9 @@
 - Shell 脚本：`bash -n` 全部通过。
 - AppleScript：`osacompile` 编译通过（修复了 `line` 保留字与 `≥` 运算符问题）。
 - Python：`py_compile` 通过；`log_run.py`、`rewrite_prompt.py`、`capture.sh` 冒烟测试通过。
-- 依赖：pandoc / markitdown / ocrmypdf / tesseract / fswatch / ical-buddy 安装中。
+- 依赖已安装：pandoc 3.10.2、markitdown 0.1.7（含 pdf/docx/pptx/xlsx/xls extras）、ocrmypdf 17.10.0、tesseract 5.5.3、fswatch 1.22.0、icalBuddy 1.10.1。
+- 格式互转端到端验证通过：`md→html`、`md→docx`、`md→pdf`（Chrome headless 回退，因未装 xelatex）、`docx→md`、`pdf→md`，且 `sha256+版本` 缓存二次命中、`--to md -o` 正确落盘。
+- 修复：`convert.sh` 缓存原子性（临时文件+mv，失败不留空缓存）、Markdown 输入直通、`--to md` 输出拷贝。
 
 ## 待用户操作（需要授权/交互）
 
