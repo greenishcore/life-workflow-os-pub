@@ -189,7 +189,7 @@ def build_html(items):
 <body>
 <header>
   <h1>生活工作流 · 融合时间看板</h1>
-  <div class="sub">共 {len(items)} 条想法/任务 · 数据来自 vault 的 frontmatter · 生成于 {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+  <div class="sub">共 {len(items)} 条想法/任务 · 数据来自 vault 的 frontmatter（输出确定性，可安全纳入版本控制）</div>
 </header>
 <div class="grid">
   <div class="card"><h2>日历热力图（每日产生想法数）</h2><div id="heat" class="chart"></div></div>
