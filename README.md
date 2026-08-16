@@ -46,7 +46,26 @@ life-workflow-os/
 
 ## 快速开始
 
-待第一阶段调研与规划完成后，在此补充可执行的启动步骤。
+环境要求与安装步骤见 [SETUP.md](SETUP.md)。最小闭环：
+
+```bash
+# 1. 装依赖（格式转换 / 同步）
+brew install pandoc ocrmypdf tesseract fswatch ical-buddy pipx && pipx install markitdown
+
+# 2. 快速捕获一条想法
+./scripts/capture.sh "突然想到的点子"
+
+# 3. 格式转换（任意 → Markdown(缓存) → pdf/docx）
+./scripts/convert.sh 输入.pdf --to pdf
+
+# 4. 交互前重写提示词 + 执行后记日志
+python3 scripts/rewrite_prompt.py "你的口语需求"
+python3 scripts/log_run.py --objective "做了什么" --status success
+```
+
+## 仓库
+
+- GitHub（私有）：https://github.com/greenishcore/life-workflow-os
 
 ## 状态
 
@@ -55,3 +74,6 @@ life-workflow-os/
 - [x] 架构整合文档完成（`docs/02-architecture/`）
 - [x] 分阶段路线图完成（`docs/03-roadmap/roadmap.md`）
 - [x] 阶段性报告输出（`docs/04-reports/2026-08-16-phase-report.md`）
+- [x] Phase 0–3 脚本与配置落地（`scripts/`、`SETUP.md`、`.github/workflows/`）
+- [x] 推送到 GitHub 私有仓库（`main` 分支）
+- [ ] Phase 4 可视化看板（Phase 5）— 待下一阶段
