@@ -79,6 +79,7 @@
 **推荐方案：不要追求真双向**，采用「**Notes 做移动捕获 → 单向导出/导入 Obsidian**」。
 
 - 事实：Apple Notes 底层是私有格式（SQLite + protobuf），官方无同步 API，**不存在可靠开箱即用的双向同步**。icloud-md 属实验项目、依赖非公开接口，易碎。
+- **补充（2026-08 更新）**：storizzi/notes-exporter 自 v1.3.0 起提供基于 AppleScript 的**回写双向同步**（`--sync` / `--sync-only` / `--create-new`，带 `.conflict.md` 冲突检测）。它仍是 AppleScript 方案（macOS-only、依赖备忘录 App），非原生 API，但比 icloud-md 可靠、维护活跃，可作为「需要回写时」的务实选择。
 - 限制：双向方案普遍有「富文本/图片/附件回写丢失」「冲突合并缺失」「依赖非公开接口随 macOS 升级失效」。
 - 务实替代：移动端用 Notes/Drafts/快捷指令捕获 → 定期跑 notes-exporter 或 Obsidian Importer 单向汇入；需要「回写 Apple」时用 Reminders 插件单独走提醒事项。
 

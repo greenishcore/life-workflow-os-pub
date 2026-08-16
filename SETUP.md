@@ -77,6 +77,16 @@ cp scripts/launchd/com.me.reminders2obsidian.plist ~/Library/LaunchAgents/
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.me.reminders2obsidian.plist
 ```
 
+## 8. 查看融合时间看板
+
+```bash
+# 本地 HTML 看板（融合时间/精力/优先级/状态/思路注释）
+python3 scripts/dashboard.py
+open vault/Dashboard/index.html
+
+# Obsidian 内看板：打开 vault/Dashboard/看板.md（Dataview + Kanban + Tasks）
+```
+
 ## vault 位置说明
 
 - 默认 vault = 本仓库 `vault/` 目录，脚本默认 `VAULT_DIR=$ROOT/vault`。

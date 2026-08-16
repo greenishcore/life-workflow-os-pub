@@ -76,4 +76,6 @@ python3 scripts/log_run.py --objective "做了什么" --status success
 - [x] 阶段性报告输出（`docs/04-reports/2026-08-16-phase-report.md`）
 - [x] Phase 0–3 脚本与配置落地（`scripts/`、`SETUP.md`、`.github/workflows/`）
 - [x] 推送到 GitHub 私有仓库（`main` 分支）
-- [ ] Phase 4 可视化看板（Phase 5）— 待下一阶段
+- [x] Phase 5 可视化看板（`scripts/dashboard.py` → `vault/Dashboard/index.html` + Obsidian Dataview/Kanban）
+- [x] notes-exporter 补装（`~/tools/notes-exporter`，v1.3.0 支持双向回写）
+- [ ] Phase 6 归档自动化收尾 + Phase 7 复盘/技能演进 — 待下一阶段

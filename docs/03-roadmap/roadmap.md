@@ -65,12 +65,12 @@ Phase 7 演进 ◄── Phase 6 归档 ◄── Phase 5 可视化 ◄── Ph
 ## Phase 5 — 可视化层：融合时间的看板
 
 **目标**：把时间、优先级、标签、想法演进融合进新颖看板。
-- [ ] 选型看板/时间线技术（Obsidian 插件 或 本地 HTML）
-- [ ] 从 Markdown/JSON 数据源生成看板
-- [ ] 展示「想法时间线 + 思路注释轨迹 + 进度」
+- [x] 选型看板/时间线技术（Obsidian 插件 或 本地 HTML）→ ECharts + Dataview/Kanban
+- [x] 从 Markdown/JSON 数据源生成看板 → `scripts/dashboard.py`（解析 frontmatter）
+- [x] 展示「想法时间线 + 思路注释轨迹 + 进度」→ 日历热力图 + 状态分布 + 融合散点 + 思路注释清单
 
-**交付物**：可交互看板（Obsidian 视图 或 `scripts/dashboard.*` 生成 HTML）。
-**验收**：看板能回答「这个想法何时产生、如何演进、现在到哪一步」。
+**交付物**：`scripts/dashboard.py` → `vault/Dashboard/index.html`（本地 HTML）+ `vault/Dashboard/看板.md`（Obsidian Dataview/Kanban）。
+**验收**：看板能回答「这个想法何时产生、如何演进、现在到哪一步」。（已用 3 条样例数据验证）
 
 ## Phase 6 — 归档层：GitHub 版本归档与自动化
 

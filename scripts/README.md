@@ -12,6 +12,7 @@
 | `notes2obsidian.sh` | Apple Notes 单向导出 → vault | notes-exporter | `./notes2obsidian.sh` |
 | `log_run.py` | agent 操作 JSONL 日志 | python3 | `python3 log_run.py --objective ...` |
 | `rewrite_prompt.py` | 口语需求 → 五段式提示词文档 | python3（可选 LLM API） | `python3 rewrite_prompt.py "需求"` |
+| `dashboard.py` | vault frontmatter → 融合时间看板 HTML | python3 + PyYAML | `python3 dashboard.py` |
 
 ## 依赖安装（未装时）
 

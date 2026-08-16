@@ -13,9 +13,8 @@ secrets.env
 credentials*.json
 token*.json
 
-# Obsidian（提交插件/主题配置，但排除工作区状态与缓存；** 匹配根与 vault/ 下）
-**/.obsidian/workspace*.json
-**/.obsidian/cache
+# Obsidian（整体不纳入版本控制：工作区状态 + 个人配置，含根与 vault/ 下）
+**/.obsidian/
 .trash/
 
 # 依赖与构建产物
