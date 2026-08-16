@@ -31,6 +31,11 @@ venv/
 .cache/
 converted/
 
+# 转换运行时产物（原始输入/中间态/生成输出均为可重建文件）
+vault/Attachments/_raw/
+vault/Attachments/_md/
+vault/Attachments/_out/
+
 # 日志中可能含隐私；按需忽略，默认保留结构化日志但排除原始敏感字段
 logs/*.private.jsonl
 
