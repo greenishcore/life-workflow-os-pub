@@ -9,6 +9,8 @@
 Phase 0 基础设施 ──► Phase 1 捕捉 ──► Phase 2 知识库 ──► Phase 3 格式转换
                                                               │
 Phase 7 演进 ◄── Phase 6 归档 ◄── Phase 5 可视化 ◄── Phase 4 执行与日志
+                                                              │
+                                                    Phase 8 产品化（软件形态）
 ```
 
 ## Phase 0 — 基础设施与版本控制
@@ -92,6 +94,24 @@ Phase 7 演进 ◄── Phase 6 归档 ◄── Phase 5 可视化 ◄── Ph
 **交付物**：`scripts/weekly_review.py` + `skills/` 库 + 周复盘模板。
 **验收**：每次迭代都让「提示词质量」与「执行可复现性」可度量提升。（机制已就绪，由日常使用驱动）
 
+## Phase 8 — 产品化：从脚本集合到桌面应用
+
+**目标**：把已跑通的能力收敛成一个可交付、可长期使用的软件。
+- [x] 抽出 UI 无关的核心包 `lifeos/`（配置/模型/序列化/仓库/服务/统计）
+- [x] frontmatter 确定性序列化：只读不产生 diff、二次保存稳定、特殊字符往返安全
+- [x] PyQt5 桌面应用：8 个页面按五阶段闭环组织，明暗双主题
+- [x] 看板从只读变可写：想法五维度全部可编辑，思路注释可增删
+- [x] 图表改原生绘制，去掉 ECharts CDN 依赖（离线可用）
+- [x] 补上 Inbox → 想法 的断口（一键提升）
+- [x] 老命令全部保留为兼容壳，CI/launchd/Makefile 零改动
+- [x] 打包为 macOS `.app`（图标 + 自动化权限声明）
+- [x] 测试：核心层 44 项单测 + GUI 离屏冒烟
+
+**交付物**：`lifeos/` 包、`bin/lifeos` 启动器、`dist/Life Workflow OS.app`、
+`tests/`、`tools/`、`docs/02-architecture/architecture-v2.md`。
+**验收**：不装 Obsidian、断网状态下，能完成「捕捉 → 建为想法 → 编辑思路注释 →
+在看板上看到轨迹 → 记录一次运行 → 生成周复盘 → 提交归档」的完整闭环。（已验证）
+
 ---
 
 ## 里程碑（Milestone）建议
@@ -103,3 +123,4 @@ Phase 7 演进 ◄── Phase 6 归档 ◄── Phase 5 可视化 ◄── Ph
 | M3 自动化闭环 | Phase 3–4 | 转换+提示词+日志闭环 |
 | M4 可视化+归档 | Phase 5–6 | 看板+GitHub 自动归档 |
 | M5 持续演进 | Phase 7 | 复盘驱动的 skills 迭代 |
+| M6 产品化 | Phase 8 | 分层重构 + 可双击运行的桌面应用 |

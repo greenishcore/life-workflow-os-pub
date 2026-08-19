@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# lifeos — Life Workflow OS 启动器
+#
+# 自动挑一个「装了 PyQt5」的 python3 来跑图形界面。
+# 用法:
+#   lifeos                 启动图形界面
+#   lifeos doctor          依赖体检
+#   lifeos capture "点子"   任何 CLI 子命令
+# 可用 LIFEOS_PYTHON 指定解释器。
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+find_python() {
+  local candidates=()
+  [[ -n "${LIFEOS_PYTHON:-}" ]] && candidates+=("$LIFEOS_PYTHON")
+  candidates+=("$(command -v python3 2>/dev/null || true)"
+              /opt/anaconda3/bin/python3
+              /opt/homebrew/bin/python3
+              /usr/local/bin/python3
+              /usr/bin/python3)
+  for py in "${candidates[@]}"; do
+    [[ -x "$py" ]] || continue
+    if "$py" -c "import PyQt5, yaml" >/dev/null 2>&1; then echo "$py"; return 0; fi
+  done
+  return 1
+}
+
+# CLI 子命令不需要 PyQt5，只有图形界面需要
+if [[ $# -gt 0 && "$1" != "gui" ]]; then
+  for py in "${LIFEOS_PYTHON:-}" "$(command -v python3)" /opt/anaconda3/bin/python3 /usr/bin/python3; do
+    [[ -x "${py:-}" ]] || continue
+    if "$py" -c "import yaml" >/dev/null 2>&1; then
+      cd "$ROOT" && exec "$py" -m lifeos.cli "$@"
+    fi
+  done
+  echo "❌ 找不到装了 PyYAML 的 python3。请先： pip3 install pyyaml" >&2
+  exit 1
+fi
+
+if ! PY="$(find_python)"; then
+  cat >&2 <<'MSG'
+❌ 找不到同时装有 PyQt5 与 PyYAML 的 python3。
+
+安装其一即可：
+  pip3 install PyQt5 pyyaml
+或指定解释器：
+  LIFEOS_PYTHON=/opt/anaconda3/bin/python3 lifeos
+MSG
+  exit 1
+fi
+
+cd "$ROOT"
+exec "$PY" -m lifeos "$@"

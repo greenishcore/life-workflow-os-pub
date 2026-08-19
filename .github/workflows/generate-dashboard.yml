@@ -5,6 +5,9 @@ on:
   push:
     paths:
       - 'vault/**'
+      - 'lifeos/html_dashboard.py'
+      - 'lifeos/models.py'
+      - 'lifeos/stats.py'
       - 'scripts/dashboard.py'
   workflow_dispatch:
 

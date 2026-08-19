@@ -40,3 +40,14 @@ logs/*.private.jsonl
 
 # 系统
 *.log
+
+# 应用打包产物（可由 tools/build_app.sh 重建；dist/ 已在上方忽略）
+assets/icon-*.png.tmp
+
+# Swift / Xcode 构建产物（均可重建）
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist

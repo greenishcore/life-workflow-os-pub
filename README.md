@@ -1,83 +1,136 @@
-# Life Workflow OS（生活工作流改造项目）
+# Life Workflow OS（生活工作流）
 
-> 把「记录 → 思考 → 执行 → 复盘 → 归档」的个人生活工作流，改造成一个可复用、可版本化、可自动化的本地优先系统。
+> 把散落在便签、日历、提醒、PDF、聊天记录、agent 会话里的信息，
+> 收成一个**本地优先、可版本化、可自动化**的个人系统 —— 现在它是一个可双击打开的桌面应用。
 
-## 愿景
+闭环：**捕捉 → 整理 → 执行 → 复盘 → 归档**，数据始终是你自己的本地 Markdown。
 
-把散落在不同平台（Apple 便签/日历/提醒、PDF、Markdown、聊天记录、agent 会话）的信息，汇聚成一个**以本地 Markdown 为核心、以 Obsidian 为知识库、以 Git/GitHub 为版本归档、以脚本与 agent 为自动化引擎**的统一工作流。
+![闭环](assets/icon-1024.png)
 
-## 核心能力（目标）
+## 快速开始
 
-| 能力 | 说明 | 状态 |
-|------|------|------|
-| 文字记录与进度管理 | 每日想法/点子捕捉 + 思路注释 + 进度看板 | 📋 规划中 |
-| 融合时间的可视化看板 | 把时间、优先级、标签、想法演进融合进同一看板 | 📋 规划中 |
-| 多平台数据链路 | Apple 便签/日历/提醒 ↔ Markdown/Obsidian | 📋 规划中 |
-| 本地知识库 | Obsidian vault + 社区插件最佳实践 | 📋 规划中 |
-| 格式互转固化 | PDF/Markdown/Word 等互转的可复用 pipeline | 📋 规划中 |
-| agent 操作日志 | 每次 agent 操作的成果与过程结构化记录，供复盘 | 📋 规划中 |
-| 提示词重写工作流 | 交互前把自然语言重写/润色为提示词文档再执行 | 📋 规划中 |
-| GitHub 版本归档 | 阶段性成果 commit/tag/release + 自动推送 | 📋 规划中 |
+```bash
+# 1) 打包成 macOS 应用（生成 dist/Life Workflow OS.app）
+bash tools/build_app.sh
+
+# 2) 双击运行，或：
+open "dist/Life Workflow OS.app"
+
+# 3) 想放进启动台
+ln -sfn "$PWD/dist/Life Workflow OS.app" /Applications/
+```
+
+不想打包也可以直接跑：
+
+```bash
+./bin/lifeos            # 图形界面
+./bin/lifeos doctor     # 依赖与配置体检
+```
+
+**依赖**：macOS + Python 3.10+ + `PyQt5` + `PyYAML`。
+其余（pandoc / markitdown / ocrmypdf / gh）都是**可选**的，缺了只影响对应功能，
+应用内「设置 → 依赖体检」会告诉你缺什么、装了有什么用。
+
+```bash
+pip3 install PyQt5 pyyaml                     # 必需
+brew install pandoc gh && pipx install markitdown   # 按需
+```
+
+## 应用能做什么
+
+界面按五阶段闭环组织，一屏一件事：
+
+| 页面 | 作用 |
+|------|------|
+| **看板** | 融合时间轴（X=时间 · Y=精力 · 点径=优先级 · 颜色=状态 · 横线=思维轨迹）、活跃热力图、状态分布、标签 TopN、最近思维轨迹 |
+| **快速捕获** | ⌘↩ 一键落到 Inbox；从 Apple 提醒/日历/备忘录导入；把随手记**一键提升为想法** |
+| **想法库** | 想法的完整读写：状态机、优先级、精力、进度、标签、**思路注释时间轴**、下一步、正文 |
+| **格式转换** | 任意格式 → Markdown（带缓存）→ PDF/Word/HTML，支持拖拽，命中缓存会明确告诉你 |
+| **提示词工作台** | 把口语需求重写成五段式提示词文档并版本化留档（可接 LLM） |
+| **运行日志与复盘** | 记录每次 agent 操作，聚合成成功率/工具 TopN/错误 TopN，一键生成周复盘 |
+| **版本归档** | git 状态、提交推送、里程碑 tag + GitHub release、提交历史 |
+| **设置** | vault 位置、明暗主题、Apple 默认值、LLM 配置、依赖体检 |
+
+想法是一等公民，带五个维度：**时间 + 状态 + 优先级 + 标签 + 思路注释（思维轨迹）**。
+状态机：`seed 种子 → sprout 发芽 → doing 推进中 → done 完成 → archived 归档`。
+
+**思路注释**是这套系统区别于普通笔记的地方：它记录「为什么会想到它、想法怎么变的」，
+复盘时看到的是过程，不只是结论。看板上每条想法因此是一条**生命线**而非一个孤点。
+
+## 命令行
+
+GUI 与命令行共用同一套核心逻辑（`lifeos/`），改哪边都是同一份数据：
+
+```bash
+./bin/lifeos capture "突然想到的点子"        # 捕获
+./bin/lifeos convert 论文.pdf --to docx      # 转换（自动缓存）
+./bin/lifeos prompt "帮我做个看板" [--llm]   # 提示词重写
+./bin/lifeos log --objective "转换论文" --status success --tools markitdown
+./bin/lifeos review --since 2026-08-12       # 周复盘
+./bin/lifeos dashboard                       # 生成自包含 HTML 看板
+./bin/lifeos sync -m "阶段成果"               # 提交并推送
+./bin/lifeos release v0.3.0 "本阶段成果"      # 里程碑
+./bin/lifeos doctor                          # 体检
+```
+
+`scripts/` 下的老命令（`capture.sh` / `convert.sh` / `dashboard.py` / …）全部保留，
+参数与输出不变，内部转调上面这套 —— 既有的 GitHub Actions、launchd、Makefile 无需改动。
 
 ## 目录结构
 
 ```
 life-workflow-os/
-├── docs/
-│   ├── 01-research/      # 检索调研报告（各领域）
-│   ├── 02-architecture/  # 逻辑化整合架构
-│   ├── 03-roadmap/       # 分阶段实施路线图
-│   └── 04-reports/       # 阶段性报告输出
-├── templates/            # 日记/想法/日志/提示词 模板
-├── prompts/              # 重写后的提示词文档（纳入版本控制）
-├── scripts/              # 自动化脚本（同步/转换/日志/看板生成）
-├── logs/                 # agent 操作日志（结构化 JSONL + Markdown）
-├── .github/workflows/    # GitHub Actions 自动化
-└── README.md
+├── lifeos/                # ★ 核心包（UI 无关）
+│   ├── config.py          #   单一配置源
+│   ├── models.py          #   Item / ThinkingNote / RunLog / 状态机
+│   ├── frontmatter.py     #   确定性 YAML 序列化
+│   ├── repository.py      #   vault 读写（原子写 + 回收站）
+│   ├── stats.py           #   看板聚合
+│   ├── html_dashboard.py  #   自包含 HTML 看板（内联 SVG，零外部依赖）
+│   ├── cli.py             #   命令行入口
+│   ├── services/          #   convert / prompts / runlog / review / apple / archive
+│   └── gui/               #   ★ PyQt5 桌面应用（theme / charts / widgets / pages）
+├── vault/                 # 你的知识库（Markdown 唯一事实源）
+├── scripts/               # 兼容壳 + AppleScript
+├── tools/                 # 打包 / 图标 / GUI 冒烟测试
+├── tests/                 # 单元测试（44 项）
+├── docs/                  # 调研 / 架构 / 路线图 / 阶段报告
+└── bin/lifeos             # 启动器
 ```
 
 ## 设计原则
 
-1. **本地优先（Local-first）**：数据以纯文本 Markdown 落盘，不锁死在某个 SaaS。
-2. **可版本化**：一切文档与脚本纳入 Git，阶段性成果打 tag/release。
-3. **可复盘**：agent 的每次操作都留痕（输入提示词、过程、产出、耗时、错误）。
-4. **算力经济**：格式转换固化为可复用、可缓存的 pipeline，避免重复计算。
-5. **先检索、再整合、后规划**：不拍脑袋，先调研真实可用的工具与链路。
+1. **本地优先** —— 数据是纯文本 Markdown，不锁死在任何 SaaS，也不锁死在本应用。
+2. **可版本化** —— 一切纳入 git；序列化确定性，只读浏览不产生 diff。
+3. **可复盘** —— agent 每次操作都留痕，日志能聚合成可执行的改进项。
+4. **算力经济** —— 格式转换按 `sha256(输入)+转换器版本` 缓存，不重复烧算力。
+5. **降级而非崩溃** —— 缺依赖只让对应功能降级，并明确告诉你缺什么。
 
-## 快速开始
+## 与 Obsidian 的关系
 
-环境要求与安装步骤见 [SETUP.md](SETUP.md)。最小闭环：
+vault 就是标准的 Obsidian 库，格式完全兼容，两边可以同时用。
+但**不装 Obsidian 也能用全部功能** —— 看板、编辑、查询、任务现在都由应用自己提供。
+插件清单见 [SETUP.md](SETUP.md)，现在是「推荐」而非「必装」。
+
+## 开发
 
 ```bash
-# 1. 装依赖（格式转换 / 同步）
-brew install pandoc ocrmypdf tesseract fswatch ical-buddy pipx && pipx install markitdown
-
-# 2. 快速捕获一条想法
-./scripts/capture.sh "突然想到的点子"
-
-# 3. 格式转换（任意 → Markdown(缓存) → pdf/docx）
-./scripts/convert.sh 输入.pdf --to pdf
-
-# 4. 交互前重写提示词 + 执行后记日志
-python3 scripts/rewrite_prompt.py "你的口语需求"
-python3 scripts/log_run.py --objective "做了什么" --status success
+python3 -m unittest discover -s tests    # 核心层测试
+python3 tools/smoke_gui.py               # GUI 离屏冒烟（8 页 × 明暗双主题）
+python3 tools/make_icon.py               # 重新生成图标
+bash tools/build_app.sh                  # 重新打包 .app
 ```
+
+架构说明见 [docs/02-architecture/architecture-v2.md](docs/02-architecture/architecture-v2.md)。
 
 ## 仓库
 
-- GitHub（私有）：https://github.com/greenishcore/life-workflow-os
+GitHub（私有）：https://github.com/greenishcore/life-workflow-os
 
 ## 状态
 
-- [x] 项目骨架建立
-- [x] 三路检索调研完成（`docs/01-research/`）
-- [x] 架构整合文档完成（`docs/02-architecture/`）
-- [x] 分阶段路线图完成（`docs/03-roadmap/roadmap.md`）
-- [x] 阶段性报告输出（`docs/04-reports/2026-08-16-phase-report.md`）
-- [x] Phase 0–3 脚本与配置落地（`scripts/`、`SETUP.md`、`.github/workflows/`）
-- [x] 推送到 GitHub 私有仓库（`main` 分支）
-- [x] Phase 5 可视化看板（`scripts/dashboard.py` → `vault/Dashboard/index.html` + Obsidian Dataview/Kanban）
-- [x] notes-exporter 补装（`~/tools/notes-exporter`，v1.3.0 支持双向回写）
-- [x] Phase 6 归档自动化（`sync.sh`/`release.sh` + 看板 CI + 备份 workflow，已发布里程碑 v0.1.0）
-- [x] Phase 7 复盘/技能演进（`weekly_review.py` + `skills/` 库）
-- [ ] 持续迭代：周复盘跑起来、skills 随使用演进 — 由你日常驱动
+- [x] Phase 0–3：骨架 / 捕捉 / 知识库 / 格式转换
+- [x] Phase 4–5：提示词与日志 / 融合时间看板
+- [x] Phase 6–7：GitHub 归档自动化 / 复盘与技能库
+- [x] **Phase 8：重构为分层架构，交付桌面应用**（本次）
+- [ ] 持续迭代：由日常使用驱动

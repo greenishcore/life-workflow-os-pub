@@ -1,97 +1,108 @@
-# 安装与配置指南（Phase 0–2 落地）
+# 安装与配置指南
 
-> 从零把本仓库跑起来，打通「捕捉 → 知识库 → 转换 → 日志 → 归档」的最小闭环。
+> 目标：五分钟把应用跑起来；Obsidian 与各类外部工具都是**可选增强**。
 
-## 0. 前置
+## 1. 最小可用（必需）
 
-- macOS（本机已就绪：git / gh / python3 / node / brew / osascript）
-- 安装 [Obsidian](https://obsidian.md/)
-- 依赖（按需，见 `scripts/README.md`）：
-  ```bash
-  brew install pandoc fswatch ical-buddy
-  brew install ocrmypdf tesseract            # 扫描件 OCR 才需要
-  pipx install markitdown                    # 或 pip install 'markitdown[all]'
-  pipx install notes-exporter                # Apple Notes 导出才需要
-  ```
+```bash
+pip3 install PyQt5 pyyaml
+cd life-workflow-os
+./bin/lifeos doctor     # 体检：看看 vault 路径与依赖情况
+./bin/lifeos            # 启动图形界面
+```
 
-## 1. 把 vault 目录作为 Obsidian 库打开
+打包成可双击的应用（会出现在访达/启动台，并带图标）：
 
-Obsidian → 「打开文件夹作为库」→ 选择本仓库的 `vault/` 目录。
-（若你想把 vault 放到别处，见文末「vault 位置」说明。）
+```bash
+bash tools/build_app.sh
+open "dist/Life Workflow OS.app"
+ln -sfn "$PWD/dist/Life Workflow OS.app" /Applications/   # 可选：放进启动台
+```
 
-## 2. 安装社区插件
+> `.app` 是启动器型包：代码与数据仍在本仓库，`git pull` 后立即是新版本。
+> 若把仓库挪了位置，重新跑一次 `tools/build_app.sh` 即可。
 
-设置 → 第三方插件 → 关闭安全模式 → 浏览社区插件，安装并启用：
+## 2. 可选依赖（缺了只影响对应功能）
+
+应用内「设置 → 依赖体检」随时能看到装了哪些、还缺哪些。
+
+| 工具 | 装它才能用 | 安装 |
+|------|-----------|------|
+| `pandoc` | Markdown → PDF / Word / HTML | `brew install pandoc` |
+| `markitdown` | PDF/PPT/Excel 等 → Markdown（比 pandoc 覆盖广） | `pipx install markitdown` |
+| `xelatex` | 高质量中文 PDF（没有则自动回退 Chrome 渲染） | `brew install --cask basictex` |
+| `ocrmypdf` + `tesseract` | 扫描件 OCR | `brew install ocrmypdf tesseract` |
+| `gh` | 里程碑 GitHub release | `brew install gh && gh auth login` |
+| notes-exporter | Apple 备忘录导出 | 见下方第 5 节 |
+
+LLM 提示词重写（可选）：
+
+```bash
+export OPENAI_API_KEY=sk-...        # Key 只走环境变量，不落盘
+# Base URL 与模型在「设置 → 提示词重写用的 LLM」里改，支持任意 OpenAI 兼容接口
+```
+
+## 3. Apple 数据导入的权限
+
+首次在「快速捕获」页点导入提醒/日程时，系统会弹自动化授权。
+若被拒或没弹，去 **系统设置 → 隐私与安全性 → 自动化**，
+允许 `Life Workflow OS`（或你的终端）控制「提醒事项」「日历」「备忘录」。
+
+导入结果写入当天 `vault/Daily/YYYY-MM-DD.md` 的「## 提醒」「## 日程」段，
+重复导入是**替换该段**而不是不断追加。
+
+## 4. Obsidian（可选）
+
+vault 就是标准 Obsidian 库，两边可以同时开、互不干扰。
+不装也能用应用的全部功能；装了适合做双链漫游、图谱、移动端查看。
+
+Obsidian → 「打开文件夹作为库」→ 选本仓库的 `vault/`。推荐插件：
 
 | 插件 | 用途 |
 |------|------|
 | Templater | 用 `vault/Templates/` 做可编程模板 |
-| Dataview | frontmatter 当数据库查询，是看板数据源 |
-| Kanban | 进度/优先级/状态看板 |
-| Tasks | `- [ ]` 全文任务查询 |
-| QuickAdd | 热键一键捕获到 Inbox |
+| Dataview | frontmatter 当数据库查询 |
+| Kanban / Tasks | 看板与任务视图 |
 | Calendar + Periodic Notes | 每日/周/月笔记 |
-| Obsidian Git | 自动 commit+push 版本归档 |
+| Obsidian Git | 自动 commit+push（与应用的「版本归档」二选一即可） |
 | Remindian | Apple 提醒事项双向同步 |
-| ICS 或 Full Calendar | 日历导入 |
 | Excalidraw | 思维导图/白板 |
-| Heatmap Calendar + Timeline | 融合时间的可视化（Phase 5） |
 
-## 3. 配置 Templater
+> 数据格式完全一致：应用写出的 frontmatter 与手写笔记逐字节同风格，
+> Dataview 查询、Obsidian 链接都照常工作。
 
-Templater 设置 → 模板文件夹设为 `vault/Templates`。
-新建笔记时用 `idea.md` / `daily-note.md` 模板。
-
-## 4. 配置 Obsidian Git（归档）
-
-- 设置 → Obsidian Git → 开启 **Auto backup**，commit interval 建议 10 分钟；
-- 勾选 **Push on backup**、**Pull before push**；
-- 认证用 **Personal Access Token (PAT)** 或系统 git 凭据。
-
-## 5. 配置 Remindian（提醒双向）
-
-按 Remindian README 授权后，Obsidian Tasks ↔ Apple Reminders 双向同步：
-https://github.com/Santofer/Remindian
-
-## 6. 跑通同步脚本（首次）
+## 5. Apple 备忘录导出（可选）
 
 ```bash
-cd life-workflow-os
-chmod +x scripts/*.sh scripts/*.py
-
-./scripts/capture.sh "测试：我的第一条想法"          # 快速捕获
-./scripts/reminders2obsidian.sh 提醒事项             # 提醒 → Daily
-./scripts/calendar2md.sh 个人 7                      # 日历 → Daily
-./scripts/convert.sh 某个.pdf --to pdf               # 转换（需装依赖）
-python3 scripts/rewrite_prompt.py "帮我做个看板"     # 提示词重写（脚手架）
-python3 scripts/log_run.py --objective "冒烟测试" --status success  # 记一条日志
+git clone https://github.com/storizzi/notes-exporter.git ~/tools/notes-exporter
+cd ~/tools/notes-exporter && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```
 
-首次运行 Apple 脚本会弹「自动化」权限，允许即可。
+之后在「快速捕获 → 导入备忘录」直接用（需备忘录 App 处于打开状态）。
 
-## 7. 定时同步（可选）
+## 6. 定时任务（可选）
 
 ```bash
 cp scripts/launchd/com.me.reminders2obsidian.plist ~/Library/LaunchAgents/
-# 改 plist 内脚本路径后：
+# 改 plist 里的脚本路径后：
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.me.reminders2obsidian.plist
 ```
 
-## 8. 查看融合时间看板
+## 7. vault 位置
+
+默认是本仓库的 `vault/`。要换：
+
+- **界面**：设置 → 知识库位置 → 浏览 → 应用（写入 `~/.config/lifeos/config.json`）
+- **命令行**：`VAULT_DIR=/你的/路径 ./bin/lifeos capture "点子"`
+
+优先级：**环境变量 > `~/.config/lifeos/config.json` > 仓库默认值**。
+
+> 建议：含隐私的 vault 单独建**私有**仓库；本仓库只放系统/脚本/模板/文档。
+
+## 8. 自检
 
 ```bash
-# 本地 HTML 看板（融合时间/精力/优先级/状态/思路注释）
-python3 scripts/dashboard.py
-open vault/Dashboard/index.html
-
-# Obsidian 内看板：打开 vault/Dashboard/看板.md（Dataview + Kanban + Tasks）
+./bin/lifeos doctor                      # 路径 + 外部工具 + vault 扫描
+python3 -m unittest discover -s tests    # 核心层 44 项测试
+python3 tools/smoke_gui.py               # GUI 8 页 × 明暗双主题冒烟
 ```
-
-## vault 位置说明
-
-- 默认 vault = 本仓库 `vault/` 目录，脚本默认 `VAULT_DIR=$ROOT/vault`。
-- 若想独立存放，复制 `vault/` 到任意位置，并在调用脚本时设 `VAULT_DIR=/你的/路径`：
-  ```bash
-  VAULT_DIR="$HOME/Documents/ObsidianVault" ./scripts/capture.sh "点子"
-  ```
-- 建议：含隐私的 vault 单独建**私有**仓库；本仓库只放系统/脚本/模板/文档。
