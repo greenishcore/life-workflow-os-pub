@@ -14,6 +14,12 @@ public enum ReviewService {
         public var duration: Double = 0
         public var byDay: [String: Int] = [:]
 
+        /// 显式声明构造器：加了 public init 后成员构造器会失效，
+        /// 而 aggregate() 需要用 since 构造。
+        public init(since: String = "") {
+            self.since = since
+        }
+
         public var success: Int { byStatus[.success] ?? 0 }
         public var failed: Int { (byStatus[.failed] ?? 0) + (byStatus[.partial] ?? 0) }
         public var rate: Double { total == 0 ? 0 : Double(success) / Double(total) * 100 }

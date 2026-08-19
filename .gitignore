@@ -45,6 +45,8 @@ logs/*.private.jsonl
 assets/icon-*.png.tmp
 
 # Swift / Xcode 构建产物（均可重建）
+# .xcodeproj 由 xcodegen 从 project.yml 生成，不入库以免合并冲突
+*.xcodeproj/
 .build/
 .swiftpm/
 DerivedData/

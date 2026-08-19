@@ -189,3 +189,94 @@ struct ConfigTests {
         // 非 watchOS 上取决于是否登录 iCloud，不做断言
     }
 }
+
+#if os(macOS)
+@Suite("Git 服务")
+struct GitServiceTests {
+
+    @Test("向上搜索 .git 能找到仓库根")
+    func findsRepository() throws {
+        // 本仓库自己就是最好的样本
+        let here = URL(fileURLWithPath: #filePath)
+        let found = try #require(GitService.findRepository(startingAt: here))
+        #expect(FileManager.default.fileExists(
+            atPath: found.appendingPathComponent(".git").path))
+        #expect(found.lastPathComponent == "life-workflow-os")
+    }
+
+    @Test("不在仓库里时返回 nil，而不是瞎猜一个路径")
+    func returnsNilOutsideRepo() throws {
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lifeos-norepo-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tmp) }
+        // /var/folders/... 往上不会有 .git
+        #expect(GitService.findRepository(startingAt: tmp) == nil)
+    }
+
+    @Test("语义化版本校验")
+    func semverValidation() {
+        #expect(GitService.isSemver("v0.2.0"))
+        #expect(GitService.isSemver("v10.20.30"))
+        #expect(!GitService.isSemver("0.2.0"))
+        #expect(!GitService.isSemver("v0.2"))
+        #expect(!GitService.isSemver("v0.2.x"))
+        #expect(!GitService.isSemver(""))
+    }
+
+    @Test("读取本仓库的真实状态")
+    func realRepoStatus() async throws {
+        let repo = try #require(GitService.findRepository(
+            startingAt: URL(fileURLWithPath: #filePath)))
+        let status = await GitService.status(repo: repo)
+        #expect(status.isRepo)
+        #expect(!status.branch.isEmpty)
+        let history = await GitService.history(repo: repo, limit: 3)
+        #expect(!history.isEmpty)
+        #expect(history.allSatisfy { !$0.hash.isEmpty && !$0.subject.isEmpty })
+    }
+}
+
+@Suite("转换服务")
+struct ConvertServiceTests {
+
+    @Test("依赖体检覆盖全部工具且路径可信")
+    func toolStatus() {
+        let tools = ConvertService.toolStatus()
+        #expect(tools.count >= 7)
+        #expect(tools.contains { $0.name == "pandoc" })
+        #expect(tools.contains { $0.name == "chrome" })
+        // 已安装的必须给出真实可执行路径
+        for tool in tools where tool.installed && tool.name != "chrome" {
+            #expect(tool.detail.hasPrefix("/"), "\(tool.name) 应给出绝对路径")
+        }
+    }
+
+    @Test("sha256 与文件内容一致（缓存键的基础）")
+    func hashing() throws {
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lifeos-hash-\(UUID().uuidString).txt")
+        defer { try? FileManager.default.removeItem(at: tmp) }
+        try "hello".write(to: tmp, atomically: true, encoding: .utf8)
+        // 已知值：sha256("hello")
+        #expect(ConvertService.sha256(of: tmp)
+                == "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824")
+    }
+
+    @Test("markdown 输入直接透传，不进缓存")
+    func markdownPassThrough() async throws {
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lifeos-md-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tmp) }
+        let src = tmp.appendingPathComponent("a.md")
+        try "# 标题\n".write(to: src, atomically: true, encoding: .utf8)
+
+        let config = AppConfig(roots: [.init(id: "local", path: tmp.path)],
+                               cachePath: tmp.appendingPathComponent("cache").path)
+        let (url, cached, _) = await ConvertService.toMarkdown(source: src, config: config, log: nil)
+        #expect(url == src)
+        #expect(cached)
+    }
+}
+#endif

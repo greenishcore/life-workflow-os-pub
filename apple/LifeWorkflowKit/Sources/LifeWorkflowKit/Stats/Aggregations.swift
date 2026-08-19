@@ -18,6 +18,18 @@ public enum Stats {
         public let status: Status
         public let priority: Priority
         public var hasSpan: Bool { begin != end }
+
+        public init(id: String, title: String, begin: String, end: String, ticks: [String],
+                    energy: Int, status: Status, priority: Priority) {
+            self.id = id
+            self.title = title
+            self.begin = begin
+            self.end = end
+            self.ticks = ticks
+            self.energy = energy
+            self.status = status
+            self.priority = priority
+        }
     }
 
     public struct Summary: Sendable, Hashable {
@@ -30,6 +42,8 @@ public enum Stats {
         public var totalNotes = 0
         public var streak = 0
         public var spanDays = 0
+
+        public init() {}
     }
 
     /// 每日活跃度 = 当天新建的记录数 + 当天写下的思路注释数。
