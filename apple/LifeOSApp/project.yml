@@ -5,6 +5,7 @@ options:
   bundleIdPrefix: com.lifeos
   deploymentTarget:
     macOS: "14.0"
+    iOS: "17.0"
   createIntermediateGroups: true
   groupSortPosition: top
 
@@ -30,6 +31,7 @@ targets:
     type: application
     platform: macOS
     sources:
+      - path: Sources/Shared
       - path: Sources/macOS
     dependencies:
       - package: LifeWorkflowKit
@@ -52,3 +54,39 @@ targets:
         NSAppleEventsUsageDescription: 用于把「提醒事项」「日历」「备忘录」的内容导入到你的本地 Markdown 知识库。
         NSRemindersFullAccessUsageDescription: 用于把提醒事项导入到当天的 Daily 笔记。
         NSCalendarsFullAccessUsageDescription: 用于把日历事件导入到当天的 Daily 笔记。
+
+  LifeOS-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/Shared
+      - path: Sources/iOS
+    dependencies:
+      - package: LifeWorkflowKit
+    settings:
+      base:
+        PRODUCT_NAME: Life Workflow OS
+        PRODUCT_BUNDLE_IDENTIFIER: com.lifeos.workflow
+        TARGETED_DEVICE_FAMILY: "1,2"     # iPhone + iPad
+        # 免费 Apple ID 无法使用 iCloud 权益；vault 通过文档选择器 + 书签接入，
+        # 用户可以选 iCloud Drive 里的目录，不需要任何权益。
+        CODE_SIGN_IDENTITY: ""
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGNING_ALLOWED: "NO"
+    info:
+      path: Resources/Info-iOS.plist
+      properties:
+        CFBundleName: Life Workflow OS
+        CFBundleDisplayName: 生活工作流
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # 让 vault 在「文件」App 里可见可编辑，用户能自己放进 iCloud Drive
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSRemindersFullAccessUsageDescription: 用于把提醒事项导入到当天的 Daily 笔记。
+        NSCalendarsFullAccessUsageDescription: 用于把日历事件导入到当天的 Daily 笔记。
+        NSMicrophoneUsageDescription: 用于语音听写快速捕获想法。
+        NSSpeechRecognitionUsageDescription: 用于把语音转成文字，快速记下想法。

@@ -1,17 +1,33 @@
 import SwiftUI
 import LifeWorkflowKit
 
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
 /// 设计令牌。颜色只在这一处定义，页面里不写死。
+///
+/// 两端都用系统语义色而不是硬编码 hex：这样明暗主题、辅助功能的
+/// 增强对比度、以及各平台自己的观感规范都自动跟随。
 enum Theme {
     static let cardRadius: CGFloat = 10
     static let pad: CGFloat = 16
     static let gap: CGFloat = 12
 
     static let accent = Color.accentColor
+    static let faint = Color.secondary.opacity(0.7)
+
+    #if os(macOS)
     static let cardBackground = Color(nsColor: .controlBackgroundColor)
     static let pageBackground = Color(nsColor: .windowBackgroundColor)
     static let border = Color(nsColor: .separatorColor)
-    static let faint = Color.secondary.opacity(0.7)
+    #else
+    static let cardBackground = Color(uiColor: .secondarySystemGroupedBackground)
+    static let pageBackground = Color(uiColor: .systemGroupedBackground)
+    static let border = Color(uiColor: .separator)
+    #endif
 }
 
 extension Color {
@@ -232,6 +248,7 @@ struct SplitOrStack<Left: View, Right: View>: View {
     @ViewBuilder let right: Right
 
     var body: some View {
+        #if os(macOS)
         if isSnapshotting {
             HStack(spacing: 0) {
                 left.frame(width: leftWidth)
@@ -244,5 +261,12 @@ struct SplitOrStack<Left: View, Right: View>: View {
                 right.frame(minWidth: 420)
             }
         }
+        #else
+        HStack(spacing: 0) {
+            left.frame(width: leftWidth)
+            Divider()
+            right.frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        #endif
     }
 }

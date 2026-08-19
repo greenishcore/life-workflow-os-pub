@@ -56,6 +56,24 @@ final class AppState {
         isLoading = false
     }
 
+    /// 把 vault 指向某个目录（iOS 解析书签后调用）。
+    /// 不写配置文件——书签才是 iOS 上的事实来源，路径每次解析可能不同。
+    func useVault(at url: URL, displayName: String, persist: Bool = false) async {
+        var cfg = config
+        // 目录在 iCloud Drive 里时必须走 NSFileCoordinator，
+        // 否则会和 Mac 端、Obsidian 互相覆盖。
+        let inICloud = url.path.contains("com~apple~CloudDocs")
+            || url.path.contains("Mobile Documents")
+        cfg.roots = [.init(id: inICloud ? "icloud" : "local", path: url.path,
+                           needsCoordination: inICloud, displayName: displayName)]
+        config = cfg
+        store = VaultStore(roots: cfg.vaultRoots)
+        runLog = RunLogService(config: cfg)
+        try? cfg.ensureDirectories()
+        if persist { _ = try? cfg.save() }
+        await reload()
+    }
+
     /// 换 vault 根（设置页用）
     func apply(config newConfig: AppConfig) async {
         config = newConfig
