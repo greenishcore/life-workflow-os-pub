@@ -48,14 +48,32 @@ public struct VaultWarning: Sendable, Hashable {
         /// 同一相对路径在多个根里都存在
         case duplicateAcrossRoots(path: String, winner: String, loser: String)
         case unreadable(path: String, reason: String)
+        /// iCloud 文件尚未下载 —— 不是损坏，读它只会拿到空内容
+        case notDownloaded(path: String)
+        /// 存在未解决的 iCloud 版本冲突
+        case conflict(path: String, versions: Int)
     }
+
     public let kind: Kind
+
     public var message: String {
         switch kind {
         case .duplicateAcrossRoots(let path, let winner, let loser):
             "「\(path)」在 \(winner) 与 \(loser) 两个根里都存在，已采用 \(winner) 的版本"
         case .unreadable(let path, let reason):
             "无法读取「\(path)」：\(reason)"
+        case .notDownloaded(let path):
+            "「\(path)」尚未从 iCloud 下载，已发起下载请求"
+        case .conflict(let path, let versions):
+            "「\(path)」有 \(versions) 个冲突版本待处理"
+        }
+    }
+
+    /// 需要用户介入的告警（冲突必须让人看见）
+    public var needsAttention: Bool {
+        switch kind {
+        case .conflict, .duplicateAcrossRoots: true
+        case .notDownloaded, .unreadable: false
         }
     }
 }

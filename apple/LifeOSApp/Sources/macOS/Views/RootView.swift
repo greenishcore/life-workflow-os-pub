@@ -67,10 +67,22 @@ struct RootView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Spacer(minLength: 8)
-            if !state.warnings.isEmpty {
-                Label("\(state.warnings.count) 条提醒", systemImage: "exclamationmark.triangle")
+            if state.conflictCount > 0 {
+                // 冲突是数据风险，做成可点击的按钮直达处理入口，而不是一条静态提示
+                Button {
+                    state.selection = .settings
+                } label: {
+                    Label("\(state.conflictCount) 处同步冲突待处理",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.orange)
+                }
+                .buttonStyle(.plain)
+                .help(state.attentionWarnings.map(\.message).joined(separator: "\n"))
+            } else if !state.warnings.isEmpty {
+                Label("\(state.warnings.count) 条提醒", systemImage: "info.circle")
                     .font(.system(size: 11))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Theme.faint)
                     .help(state.warnings.map(\.message).joined(separator: "\n"))
             }
             Text("\(state.items.count) 条记录")

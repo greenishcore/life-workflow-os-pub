@@ -21,6 +21,7 @@ public actor VaultStore {
     private var items: [Item] = []
     private var loaded = false
     private(set) public var warnings: [VaultWarning] = []
+    private let cloud = CloudSyncService()
 
     public init(roots: [VaultRoot]) {
         precondition(!roots.isEmpty, "至少要有一个 vault 根")
@@ -62,6 +63,22 @@ public actor VaultStore {
         for root in roots {
             for url in Self.markdownFiles(under: root.url) {
                 let rel = Self.relativePath(of: url, under: root.url)
+
+                // iCloud 特有的两种情况，必须在「读文件」之前识别，
+                // 否则未下载的文件会被当成空笔记，冲突会被静默覆盖。
+                if root.needsCoordination {
+                    if !cloud.state(of: url).isReadable {
+                        try? cloud.requestDownload(url)
+                        newWarnings.append(.init(kind: .notDownloaded(path: rel)))
+                        continue
+                    }
+                    let versions = NSFileVersion.unresolvedConflictVersionsOfItem(at: url) ?? []
+                    if !versions.isEmpty {
+                        newWarnings.append(.init(kind: .conflict(path: rel,
+                                                                 versions: versions.count + 1)))
+                    }
+                }
+
                 let text: String
                 do {
                     text = try FileIO.read(url, coordinated: root.needsCoordination)
@@ -212,6 +229,39 @@ public actor VaultStore {
         item.rootID = root.id
         upsertIndex(item)
         return target
+    }
+
+    // MARK: iCloud 冲突
+
+    /// 是否存在待处理的冲突
+    public var hasConflicts: Bool {
+        warnings.contains { if case .conflict = $0.kind { return true } else { return false } }
+    }
+
+    /// 解决所有 iCloud 根下的冲突。落败版本会被保留到 `.conflicts/`，不会丢。
+    @discardableResult
+    public func resolveConflicts() async -> [ConflictReport] {
+        var reports: [ConflictReport] = []
+        for root in roots where root.needsCoordination {
+            reports += await cloud.resolveAll(in: root.url)
+        }
+        if !reports.isEmpty { _ = load(force: true) }
+        return reports
+    }
+
+    /// 主动为尚未下载的文件发起下载
+    @discardableResult
+    public func downloadPending() async -> Int {
+        var n = 0
+        for root in roots where root.needsCoordination {
+            n += await cloud.downloadPending(in: root.url)
+        }
+        return n
+    }
+
+    /// 某个文件的 iCloud 状态（诊断用）
+    public nonisolated func cloudState(of url: URL) -> CloudFileState {
+        CloudSyncService().state(of: url)
     }
 
     // MARK: 捕捉

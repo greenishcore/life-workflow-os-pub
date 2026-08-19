@@ -14,12 +14,68 @@ struct SettingsView: View {
         PageScaffold(destination: .settings) {
             Button("保存设置") { Task { await save() } }.buttonStyle(.borderedProminent)
         } content: {
+            if state.conflictCount > 0 || state.pendingDownloadCount > 0
+                || !state.conflictReports.isEmpty {
+                syncCard
+            }
             rootsCard
             appleCard
             llmCard
             diagnosticsCard
         }
         .task { load() }
+    }
+
+    // MARK: iCloud 同步
+
+    private var syncCard: some View {
+        Card(title: "iCloud 同步",
+             hint: "冲突处理遵循：updated 更新者胜；落败版本一律保留到 .conflicts/，绝不丢弃") {
+            if state.conflictCount > 0 {
+                ForEach(Array(state.attentionWarnings.enumerated()), id: \.offset) { _, w in
+                    Label(w.message, systemImage: "exclamationmark.triangle.fill")
+                        .font(.system(size: 12)).foregroundStyle(.orange)
+                }
+                HStack {
+                    Spacer()
+                    Button("处理全部冲突") { Task { await state.resolveConflicts() } }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(state.isResolvingConflicts)
+                    if state.isResolvingConflicts { ProgressView().controlSize(.small) }
+                }
+            }
+
+            if state.pendingDownloadCount > 0 {
+                HStack {
+                    Label("\(state.pendingDownloadCount) 个文件尚未从 iCloud 下载",
+                          systemImage: "icloud.and.arrow.down")
+                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                    Spacer()
+                    Button("发起下载") { Task { await state.downloadPending() } }
+                }
+            }
+
+            if !state.conflictReports.isEmpty {
+                Divider()
+                Text("最近一次处理结果").font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                ForEach(state.conflictReports) { report in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(report.message).font(.system(size: 11))
+                        ForEach(report.archived, id: \.self) { url in
+                            Button {
+                                NSWorkspace.shared.activateFileViewerSelecting([url])
+                            } label: {
+                                Text(url.lastPathComponent)
+                                    .font(.system(size: 10, design: .monospaced))
+                            }
+                            .buttonStyle(.link)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
     }
 
     // MARK: vault 根

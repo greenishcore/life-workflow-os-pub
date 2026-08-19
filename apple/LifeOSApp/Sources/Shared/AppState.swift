@@ -20,6 +20,20 @@ final class AppState {
     private(set) var summary = Stats.Summary()
     private(set) var warnings: [VaultWarning] = []
     private(set) var isLoading = false
+    /// 最近一次冲突处理的结果，用来向用户交代「东西去哪了」
+    private(set) var conflictReports: [ConflictReport] = []
+    private(set) var isResolvingConflicts = false
+
+    /// 需要用户介入的告警（冲突、跨根重名）
+    var attentionWarnings: [VaultWarning] { warnings.filter(\.needsAttention) }
+
+    var conflictCount: Int {
+        warnings.filter { if case .conflict = $0.kind { return true } else { return false } }.count
+    }
+
+    var pendingDownloadCount: Int {
+        warnings.filter { if case .notDownloaded = $0.kind { return true } else { return false } }.count
+    }
 
     // 导航
     var selection: Destination = .dashboard
@@ -82,6 +96,28 @@ final class AppState {
         try? newConfig.ensureDirectories()
         _ = try? newConfig.save()
         await reload()
+    }
+
+    // MARK: iCloud 冲突
+
+    /// 解决全部冲突。落败版本保留在 .conflicts/，绝不静默丢弃。
+    @discardableResult
+    func resolveConflicts() async -> [ConflictReport] {
+        isResolvingConflicts = true
+        defer { isResolvingConflicts = false }
+        let reports = await store.resolveConflicts()
+        conflictReports = reports
+        await reload()
+        notify(reports.isEmpty ? "没有需要处理的冲突"
+                               : "已处理 \(reports.count) 处冲突，落败版本保留在 .conflicts/")
+        return reports
+    }
+
+    /// 为尚未下载的 iCloud 文件发起下载
+    func downloadPending() async {
+        let n = await store.downloadPending()
+        notify(n == 0 ? "没有待下载的文件" : "已为 \(n) 个文件发起下载")
+        if n > 0 { await reload() }
     }
 
     // MARK: 导航

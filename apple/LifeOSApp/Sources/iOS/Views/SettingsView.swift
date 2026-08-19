@@ -13,6 +13,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if state.conflictCount > 0 || state.pendingDownloadCount > 0
+                    || !state.conflictReports.isEmpty {
+                    syncSection
+                }
                 vaultSection
                 appleSection
                 diagnosticsSection
@@ -29,6 +33,53 @@ struct SettingsView: View {
                 guard case .success(let urls) = result, let url = urls.first else { return }
                 Task { await vault.adopt(url, into: state) }
             }
+        }
+    }
+
+    // MARK: iCloud 同步
+
+    private var syncSection: some View {
+        Section {
+            if state.conflictCount > 0 {
+                ForEach(Array(state.attentionWarnings.enumerated()), id: \.offset) { _, w in
+                    Label(w.message, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption).foregroundStyle(.orange)
+                }
+                Button {
+                    Task { await state.resolveConflicts() }
+                } label: {
+                    HStack {
+                        Label("处理全部冲突", systemImage: "arrow.triangle.merge")
+                        if state.isResolvingConflicts {
+                            Spacer(); ProgressView()
+                        }
+                    }
+                }
+                .disabled(state.isResolvingConflicts)
+            }
+
+            if state.pendingDownloadCount > 0 {
+                Button {
+                    Task { await state.downloadPending() }
+                } label: {
+                    Label("下载 \(state.pendingDownloadCount) 个未下载的文件",
+                          systemImage: "icloud.and.arrow.down")
+                }
+            }
+
+            ForEach(state.conflictReports) { report in
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(report.message).font(.caption)
+                    ForEach(report.archived, id: \.self) { url in
+                        Text(url.lastPathComponent)
+                            .font(.caption2.monospaced()).foregroundStyle(Theme.faint)
+                    }
+                }
+            }
+        } header: {
+            Text("iCloud 同步")
+        } footer: {
+            Text("冲突处理规则：frontmatter 的 updated 更新者胜出；落败版本一律保留到 vault 的 .conflicts/ 目录，用任何编辑器都能打开对比，确认无用后再自行删除。")
         }
     }
 
