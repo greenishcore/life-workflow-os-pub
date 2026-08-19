@@ -1,0 +1,230 @@
+import Charts
+import SwiftUI
+import LifeWorkflowKit
+
+struct LogsView: View {
+    @Environment(AppState.self) private var state
+    @Environment(\.isSnapshotting) private var isSnapshotting
+
+    @State private var rangeDays = 7
+    @State private var logs: [RunLog] = []
+    @State private var stats = ReviewService.Stats()
+
+    // 手动记一条
+    @State private var objective = ""
+    @State private var status: RunLog.Status = .success
+    @State private var tools = ""
+    @State private var outputs = ""
+    @State private var errors = ""
+    @State private var notes = ""
+    @State private var model = ""
+    @State private var duration = 0.0
+
+    private let ranges: [(String, Int)] = [("最近 7 天", 7), ("最近 14 天", 14),
+                                           ("最近 30 天", 30), ("全部", 3650)]
+
+    var body: some View {
+        PageScaffold(destination: .logs) {
+            Picker("", selection: $rangeDays) {
+                ForEach(ranges, id: \.1) { Text($0.0).tag($0.1) }
+            }
+            .labelsHidden()
+            .frame(width: 120)
+
+            Button("生成周复盘报告") { Task { await writeReport() } }
+                .buttonStyle(.borderedProminent)
+                .disabled(stats.total == 0)
+        } content: {
+            kpis
+            charts
+            addCard
+            tableCard
+        }
+        .task(id: rangeDays) { await load() }
+    }
+
+    private var kpis: some View {
+        HStack(spacing: Theme.gap) {
+            StatTile(label: "运行次数", value: "\(stats.total)", delta: "\(stats.since) 起")
+            StatTile(label: "成功率", value: "\(Int(stats.rate))%",
+                     delta: "成功 \(stats.success)", color: RunLog.Status.success.color)
+            StatTile(label: "失败/部分", value: "\(stats.failed)",
+                     delta: "失败 + 部分成功", color: RunLog.Status.failed.color)
+            StatTile(label: "总耗时", value: "\(Int(stats.duration))s",
+                     delta: stats.total == 0 ? "—"
+                        : String(format: "平均 %.1fs/次", stats.duration / Double(stats.total)),
+                     color: Theme.accent)
+        }
+    }
+
+    private var charts: some View {
+        HStack(alignment: .top, spacing: Theme.gap) {
+            Card(title: "状态分布") {
+                if stats.total == 0 {
+                    emptyChart
+                } else {
+                    Chart(RunLog.Status.allCases, id: \.self) { s in
+                        BarMark(x: .value("状态", s.label),
+                                y: .value("次数", stats.byStatus[s] ?? 0))
+                            .foregroundStyle(s.color)
+                            .cornerRadius(4)
+                            .annotation(position: .top) {
+                                Text("\(stats.byStatus[s] ?? 0)").font(.system(size: 10))
+                            }
+                    }
+                    .chartYAxis(.hidden)
+                    .frame(height: 140)
+                }
+            }
+            Card(title: "工具使用 TopN") {
+                rankChart(stats.tools.map { ($0.name, $0.count) }, color: Theme.accent)
+            }
+            Card(title: "错误 TopN", hint: "高频错误 = 该沉淀成 skill 的信号") {
+                rankChart(stats.errors.map { ($0.message, $0.count) }, color: .red)
+            }
+        }
+    }
+
+    private var emptyChart: some View {
+        Text("暂无数据").font(.system(size: 12)).foregroundStyle(Theme.faint)
+            .frame(maxWidth: .infinity, minHeight: 140)
+    }
+
+    @ViewBuilder
+    private func rankChart(_ entries: [(String, Int)], color: Color) -> some View {
+        if entries.isEmpty {
+            emptyChart
+        } else {
+            Chart(entries, id: \.0) { entry in
+                BarMark(x: .value("次数", entry.1), y: .value("项", entry.0))
+                    .foregroundStyle(color)
+                    .cornerRadius(3)
+                    .annotation(position: .trailing, spacing: 4) {
+                        Text("\(entry.1)").font(.system(size: 10)).foregroundStyle(.secondary)
+                    }
+            }
+            .chartXAxis(.hidden)
+            .chartYAxis { AxisMarks(position: .leading) { AxisValueLabel() } }
+            .chartPlotStyle { $0.padding(.trailing, 18) }
+            .frame(height: max(140, CGFloat(entries.count) * 24))
+        }
+    }
+
+    private var addCard: some View {
+        Card(title: "记一次操作", hint: "跑完一次 agent 任务后，把过程与产出记下来") {
+            HStack(spacing: 8) {
+                TextField("这次做了什么（必填）", text: $objective)
+                Picker("", selection: $status) {
+                    ForEach(RunLog.Status.allCases, id: \.self) { Text($0.label).tag($0) }
+                }.labelsHidden().frame(width: 80)
+                TextField("秒", value: $duration, format: .number).frame(width: 60)
+            }
+            HStack(spacing: 8) {
+                TextField("用到的工具，逗号分隔", text: $tools)
+                TextField("产出路径，逗号分隔", text: $outputs)
+                TextField("错误，逗号分隔", text: $errors)
+            }
+            HStack(spacing: 8) {
+                TextField("复盘备注：下次怎么做更好", text: $notes)
+                TextField("模型", text: $model).frame(width: 140)
+                Button("记录") { Task { await addLog() } }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(objective.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+    }
+
+    private var tableCard: some View {
+        Card(title: "运行日志", hint: "数据源 logs/run-log.jsonl") {
+            if logs.isEmpty {
+                EmptyStateView(symbol: "clock", title: "这段时间还没有日志",
+                               hint: "用上面的表单记一条，或用命令行 lifeos log")
+                    .frame(height: 130)
+            } else if isSnapshotting {
+                VStack(spacing: 0) {
+                    ForEach(logs.prefix(6)) { LogRow(log: $0) }
+                }
+            } else {
+                Table(logs) {
+                    TableColumn("时间") { Text($0.timestamp.replacingOccurrences(of: "T", with: " ")) }
+                        .width(160)
+                    TableColumn("状态") { log in
+                        Text("\(log.status.icon) \(log.status.label)").foregroundStyle(log.status.color)
+                    }.width(70)
+                    TableColumn("目标", value: \.objective)
+                    TableColumn("工具") { Text($0.toolsUsed.joined(separator: ", ")) }.width(140)
+                    TableColumn("耗时") { Text($0.durationSeconds == 0 ? "" : "\(Int($0.durationSeconds))s") }
+                        .width(60)
+                    TableColumn("产出 / 错误") { log in
+                        Text(log.outputs.isEmpty ? log.errors.joined(separator: "; ")
+                                                 : log.outputs.joined(separator: ", "))
+                    }
+                }
+                .frame(minHeight: 240)
+            }
+        }
+    }
+
+    // MARK: 动作
+
+    private func load() async {
+        let since = ReviewService.defaultSince(days: rangeDays)
+        let loaded = await state.runLog.load(since: since)
+        logs = loaded
+        stats = ReviewService.aggregate(loaded, since: since)
+    }
+
+    private func addLog() async {
+        func split(_ s: String) -> [String] {
+            s.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+        }
+        let log = RunLog(objective: objective.trimmingCharacters(in: .whitespaces),
+                         toolsUsed: split(tools), outputs: split(outputs),
+                         status: status, errors: split(errors),
+                         durationSeconds: duration, model: model, notes: notes)
+        do {
+            let saved = try await state.runLog.append(log)
+            objective = ""; tools = ""; outputs = ""; errors = ""; notes = ""; model = ""
+            duration = 0
+            state.notify("已记录 \(saved.runID)")
+            await load()
+        } catch {
+            state.notify("记录失败：\(error.localizedDescription)")
+        }
+    }
+
+    private func writeReport() async {
+        let md = ReviewService.renderMarkdown(stats)
+        let target = state.store.dailyNote(date: nil)
+            .deletingLastPathComponent()
+            .appendingPathComponent("周复盘-\(stats.since).md")
+        do {
+            try FileManager.default.createDirectory(
+                at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try md.write(to: target, atomically: true, encoding: .utf8)
+            state.notify("周复盘已生成 → \(target.lastPathComponent)")
+        } catch {
+            state.notify("生成失败：\(error.localizedDescription)")
+        }
+    }
+}
+
+private struct LogRow: View {
+    let log: RunLog
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(log.status.icon)
+            Text(log.timestamp.prefix(16).replacingOccurrences(of: "T", with: " "))
+                .font(.system(size: 11, design: .monospaced)).foregroundStyle(Theme.faint)
+                .frame(width: 120, alignment: .leading)
+            Text(log.objective).font(.system(size: 12))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(log.toolsUsed.joined(separator: ", "))
+                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .frame(width: 130, alignment: .leading)
+        }
+        .padding(.vertical, 4)
+    }
+}

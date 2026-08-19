@@ -1,0 +1,54 @@
+# xcodegen 工程规格。
+# 只把这份 YAML 入库，.xcodeproj 由 `xcodegen generate` 生成（可重建、不产生合并冲突）。
+name: LifeOS
+options:
+  bundleIdPrefix: com.lifeos
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  LifeWorkflowKit:
+    path: ../LifeWorkflowKit
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # 本机没有签名身份，用 ad-hoc 签名以便本地运行；
+    # 等配了 Apple ID 改成 Automatic 即可。
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "NO"
+    ENABLE_HARDENED_RUNTIME: "NO"
+
+targets:
+  LifeOS-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/macOS
+    dependencies:
+      - package: LifeWorkflowKit
+    settings:
+      base:
+        PRODUCT_NAME: Life Workflow OS
+        PRODUCT_BUNDLE_IDENTIFIER: com.lifeos.workflow
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        COMBINE_HIDPI_IMAGES: "YES"
+    info:
+      path: Resources/Info-macOS.plist
+      properties:
+        CFBundleName: Life Workflow OS
+        CFBundleDisplayName: Life Workflow OS
+        LSMinimumSystemVersion: "14.0"
+        NSHighResolutionCapable: true
+        LSApplicationCategoryType: public.app-category.productivity
+        # Apple 数据链路需要的权限说明（缺了会在请求权限时直接崩）
+        NSAppleEventsUsageDescription: 用于把「提醒事项」「日历」「备忘录」的内容导入到你的本地 Markdown 知识库。
+        NSRemindersFullAccessUsageDescription: 用于把提醒事项导入到当天的 Daily 笔记。
+        NSCalendarsFullAccessUsageDescription: 用于把日历事件导入到当天的 Daily 笔记。
