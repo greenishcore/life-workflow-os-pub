@@ -1,0 +1,69 @@
+name: test
+
+on:
+  push:
+    paths:
+      - 'lifeos/**'
+      - 'tests/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - 'apple/**'
+      - '.github/workflows/test.yml'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - name: 核心层单元测试
+        run: python3 -m unittest discover -s tests -v
+      - name: 兼容壳仍可调用
+        run: |
+          python3 scripts/dashboard.py -o /tmp/d.html
+          python3 scripts/dashboard.py -o /tmp/d2.html
+          diff -q /tmp/d.html /tmp/d2.html   # 输出必须确定性，否则 CI 会反复提交
+
+  gui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装 Qt 运行时依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libegl1 libxkbcommon-x11-0 libdbus-1-3 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xfixes0
+      - run: pip install pyyaml PyQt5
+      - name: GUI 离屏冒烟（8 页 × 明暗双主题）
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python3 tools/smoke_gui.py
+
+  swift-kit:
+    # Apple 原生化的共享核心包：macOS 构建 + 测试 + iOS 交叉编译
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apple/LifeWorkflowKit
+    steps:
+      - uses: actions/checkout@v4
+      - name: 显示工具链版本
+        run: swift --version && xcodebuild -version
+      - name: 构建（Swift 6 严格并发，不容忍警告）
+        run: |
+          set -o pipefail
+          swift build 2>&1 | tee build.log
+          ! grep -q 'warning:' build.log || { echo "❌ 存在编译警告"; exit 1; }
+      - name: 单元测试（含与 Python 实现的交叉验证）
+        run: swift test
+      - name: iOS 交叉编译
+        run: xcodebuild -scheme LifeWorkflowKit -destination 'generic/platform=iOS' -quiet build
