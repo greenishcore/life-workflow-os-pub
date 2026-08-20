@@ -34,7 +34,7 @@ struct SettingsView: View {
             if state.conflictCount > 0 {
                 ForEach(Array(state.attentionWarnings.enumerated()), id: \.offset) { _, w in
                     Label(w.message, systemImage: "exclamationmark.triangle.fill")
-                        .font(.system(size: 12)).foregroundStyle(.orange)
+                        .font(Theme.Typo.list).foregroundStyle(.orange)
                 }
                 HStack {
                     Spacer()
@@ -49,7 +49,7 @@ struct SettingsView: View {
                 HStack {
                     Label("\(state.pendingDownloadCount) 个文件尚未从 iCloud 下载",
                           systemImage: "icloud.and.arrow.down")
-                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                        .font(Theme.Typo.list).foregroundStyle(.secondary)
                     Spacer()
                     Button("发起下载") { Task { await state.downloadPending() } }
                 }
@@ -57,17 +57,17 @@ struct SettingsView: View {
 
             if !state.conflictReports.isEmpty {
                 Divider()
-                Text("最近一次处理结果").font(.system(size: 11, weight: .semibold))
+                Text("最近一次处理结果").font(Theme.Typo.hintStrong)
                     .foregroundStyle(.secondary)
                 ForEach(state.conflictReports) { report in
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(report.message).font(.system(size: 11))
+                        Text(report.message).font(Theme.Typo.hint)
                         ForEach(report.archived, id: \.self) { url in
                             Button {
                                 NSWorkspace.shared.activateFileViewerSelecting([url])
                             } label: {
                                 Text(url.lastPathComponent)
-                                    .font(.system(size: 10, design: .monospaced))
+                                    .font(Theme.Typo.monoSmall)
                             }
                             .buttonStyle(.link)
                         }
@@ -88,12 +88,12 @@ struct SettingsView: View {
                     Image(systemName: root.needsCoordination ? "icloud" : "internaldrive")
                         .foregroundStyle(root.needsCoordination ? Theme.accent : .secondary)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(root.displayName).font(.system(size: 12, weight: .semibold))
-                        Text(root.path).font(.system(size: 11, design: .monospaced))
+                        Text(root.displayName).font(Theme.Typo.listStrong)
+                        Text(root.path).font(Theme.Typo.mono)
                             .foregroundStyle(Theme.faint).textSelection(.enabled)
                         Text(root.folders.isEmpty ? "兜底根（其余目录都落这里）"
                                                   : "归属：\(root.folders.joined(separator: " / "))")
-                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                            .font(Theme.Typo.hint).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Button("选择…") { pick(index: index) }
@@ -128,7 +128,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     ForEach(Array(state.warnings.enumerated()), id: \.offset) { _, w in
                         Label(w.message, systemImage: "exclamationmark.triangle")
-                            .font(.system(size: 11)).foregroundStyle(.orange)
+                            .font(Theme.Typo.hint).foregroundStyle(.orange)
                     }
                 }
             }
@@ -138,8 +138,8 @@ struct SettingsView: View {
     private var appleCard: some View {
         Card(title: "Apple 默认值", hint: "捕捉页导入时的默认列表 / 日历名") {
             HStack(spacing: 14) {
-                HStack { Text("提醒事项列表").font(.system(size: 12)); TextField("", text: $reminderList) }
-                HStack { Text("日历名").font(.system(size: 12)); TextField("", text: $calendarName) }
+                HStack { Text("提醒事项列表").font(Theme.Typo.list); TextField("", text: $reminderList) }
+                HStack { Text("日历名").font(Theme.Typo.list); TextField("", text: $calendarName) }
             }
         }
     }
@@ -148,8 +148,8 @@ struct SettingsView: View {
         Card(title: "提示词重写用的 LLM",
              hint: "OpenAI 兼容接口；API Key 走环境变量 OPENAI_API_KEY，不落盘") {
             HStack(spacing: 14) {
-                HStack { Text("Base URL").font(.system(size: 12)); TextField("", text: $baseURL) }
-                HStack { Text("模型").font(.system(size: 12)); TextField("", text: $model).frame(width: 160) }
+                HStack { Text("Base URL").font(Theme.Typo.list); TextField("", text: $baseURL) }
+                HStack { Text("模型").font(Theme.Typo.list); TextField("", text: $model).frame(width: 160) }
             }
             Label(
                 ProcessInfo.processInfo.environment["OPENAI_API_KEY"] != nil
@@ -158,7 +158,7 @@ struct SettingsView: View {
                 systemImage: ProcessInfo.processInfo.environment["OPENAI_API_KEY"] != nil
                     ? "checkmark.circle" : "circle"
             )
-            .font(.system(size: 11)).foregroundStyle(Theme.faint)
+            .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
         }
     }
 
@@ -176,9 +176,9 @@ struct SettingsView: View {
 
     private func grid(_ label: String, _ value: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
-            Text(label).font(.system(size: 11)).foregroundStyle(.secondary)
+            Text(label).font(Theme.Typo.hint).foregroundStyle(.secondary)
                 .frame(width: 80, alignment: .leading)
-            Text(value).font(.system(size: 11, design: .monospaced))
+            Text(value).font(Theme.Typo.mono)
                 .foregroundStyle(Theme.faint).textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

@@ -13,8 +13,8 @@ import UIKit
 /// 增强对比度、以及各平台自己的观感规范都自动跟随。
 enum Theme {
     static let cardRadius: CGFloat = 10
-    static let pad: CGFloat = 16
-    static let gap: CGFloat = 12
+    static let pad = Space.xl
+    static let gap = Space.lg
 
     static let accent = Color.accentColor
     static let faint = Color.secondary.opacity(0.7)
@@ -28,6 +28,103 @@ enum Theme {
     static let pageBackground = Color(uiColor: .systemGroupedBackground)
     static let border = Color(uiColor: .separator)
     #endif
+}
+
+// MARK: - 排版令牌
+
+extension Theme {
+
+    /// 排版令牌：按**用途**命名，不按字号命名。
+    ///
+    /// 存在的理由是**单一事实源**：迁移前全仓 154 处写死字号、21 种组合，
+    /// 想把「次要说明」调大一号得翻 22 个文件。现在只改这里一处。
+    /// 这是把界面设计交接出去的前提——接手方改令牌，不需要读遍所有视图。
+    ///
+    /// 绝大多数令牌映射到系统语义字体（`.body` / `.callout` / `.subheadline` / `.footnote`），
+    /// 而不是固定字号，原因是本文件在 `Shared/` 里、两端共用：
+    /// **iOS 上语义字体会跟随用户的动态字体设置，固定字号不会。**
+    ///
+    /// 但别指望 macOS 也有这个好处——**macOS 没有动态字体**。实测：
+    /// `NSFont.preferredFont(forTextStyle: .body)` 恒为 13.0，
+    /// 给视图加 `.dynamicTypeSize(.accessibility5)` 渲染结果一个像素都不变。
+    /// 所以在 macOS 上换语义字体是**中性**的，好处只在 iOS 侧兑现。
+    ///
+    /// 换过去不改观感——实测 macOS 的语义字号正好是这几个值：
+    /// `.body` 13 · `.callout` 12 · `.subheadline` 11 · `.footnote` 10 · `.largeTitle` 26，
+    /// 与迁移前逐点相同（18 张页面快照里 10 张逐字节一致，其余 8 张只有亚像素级栅格差，
+    /// 墨迹包围盒完全不变，即字形位置没动）。
+    ///
+    /// 注意 `.headline` 是 **Bold** 而非 semibold，所以「13 号半粗」用
+    /// `.body.weight(.semibold)` 而不是 `.headline`。
+    ///
+    /// 少数标了「固定」的令牌保留精确字号，各自注明了原因。
+    enum Typo {
+
+        // MARK: 标题
+
+        /// 页面大标题。固定：语义档位在 17（`.title2`）与 22（`.title`）之间跳，
+        /// 都会明显改变现有层级，交由接手方按新设计定夺。
+        static let pageTitle = Font.system(size: 20, weight: .bold)
+        /// 区块小标题。固定，理由同 `pageTitle`。
+        static let sectionTitle = Font.system(size: 18, weight: .semibold)
+        /// 侧边栏应用名。固定：它是品牌标识，不参与正文层级。
+        static let sidebarTitle = Font.system(size: 14, weight: .bold)
+        /// 卡片标题（13 半粗）
+        static let cardTitle = Font.body.weight(.semibold)
+
+        // MARK: 正文
+
+        /// 正文（13）
+        static let body = Font.body
+        /// 列表与表格文字（12）
+        static let list = Font.callout
+        static let listStrong = Font.callout.weight(.semibold)
+        /// 次要说明、徽章、标签（11）——全仓用得最多的一档
+        static let hint = Font.subheadline
+        static let hintStrong = Font.subheadline.weight(.semibold)
+        static let hintMedium = Font.subheadline.weight(.medium)
+        /// 更小的辅助文字、分组标题（10）
+        static let micro = Font.footnote
+        static let microStrong = Font.footnote.weight(.semibold)
+        static let microMedium = Font.footnote.weight(.medium)
+
+        // MARK: 数字
+
+        /// KPI 大数字（26 粗体圆角）
+        static let metric = Font.system(.largeTitle, design: .rounded).weight(.bold)
+        /// 卡片内小数字（13 粗体圆角）
+        static let metricSmall = Font.system(.body, design: .rounded).weight(.bold)
+
+        // MARK: 等宽（路径、哈希、时间戳、数值对齐）
+
+        static let mono = Font.system(.subheadline, design: .monospaced)      // 11
+        static let monoSmall = Font.system(.footnote, design: .monospaced)    // 10
+        static let monoList = Font.system(.callout, design: .monospaced)      // 12
+
+        // MARK: 固定字号
+
+        /// 图表坐标刻度。固定：绘图区尺寸是算出来的，刻度字号必须可预测。
+        static let axis = Font.system(size: 9)
+        /// 空态大图标。固定：它是图形不是文字。
+        static let emptySymbol = Font.system(size: 30)
+        /// 单处使用的大号数字（架构地图的模块计数）
+        static let display = Font.system(size: 22)
+    }
+
+    /// 间距刻度。
+    ///
+    /// 只收录了目前**已经在用且占绝大多数**的六档；仓库里还散着一批
+    /// 1 / 3 / 5 / 7 / 9 / 11 / 18 pt 的取值，刻意没有强行归并——
+    /// 把它们对齐到刻度会改变布局，那是设计决策，不该混在重构里。
+    /// 这批位置由 `ui-spacing-tokens` 约束列出来，作为接手方的规范化清单。
+    enum Space {
+        static let xs: CGFloat = 2
+        static let sm: CGFloat = 4
+        static let md: CGFloat = 8
+        static let lg: CGFloat = 12
+        static let xl: CGFloat = 16
+        static let xxl: CGFloat = 20
+    }
 }
 
 extension Color {
@@ -69,9 +166,9 @@ struct Card<Content: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             if !title.isEmpty {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(title).font(.system(size: 13, weight: .semibold))
+                    Text(title).font(Theme.Typo.cardTitle)
                     if !hint.isEmpty {
-                        Text(hint).font(.system(size: 11)).foregroundStyle(Theme.faint)
+                        Text(hint).font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                     }
                     Spacer(minLength: 0)
                 }
@@ -98,10 +195,10 @@ struct StatTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value)
-                .font(.system(size: 26, weight: .bold, design: .rounded))
+                .font(Theme.Typo.metric)
                 .foregroundStyle(color ?? .primary)
-            Text(label).font(.system(size: 11)).foregroundStyle(.secondary)
-            Text(delta).font(.system(size: 11)).foregroundStyle(Theme.faint)
+            Text(label).font(Theme.Typo.hint).foregroundStyle(.secondary)
+            Text(delta).font(Theme.Typo.hint).foregroundStyle(Theme.faint)
         }
         .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         .padding(Theme.pad)
@@ -120,7 +217,7 @@ struct Badge: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11))
+            .font(Theme.Typo.hint)
             .padding(.horizontal, 7)
             .padding(.vertical, 2)
             .foregroundStyle(filled ? .white : color)
@@ -133,7 +230,7 @@ struct TagChip: View {
     let text: String
     var body: some View {
         Text("#\(text)")
-            .font(.system(size: 11))
+            .font(Theme.Typo.hint)
             .padding(.horizontal, 6)
             .padding(.vertical, 1)
             .foregroundStyle(Theme.accent)
@@ -150,8 +247,8 @@ struct PageHeader<Actions: View>: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 20, weight: .bold))
-                Text(subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
+                Text(title).font(Theme.Typo.pageTitle)
+                Text(subtitle).font(Theme.Typo.list).foregroundStyle(.secondary)
             }
             Spacer(minLength: 12)
             HStack(spacing: 8) { actions }
@@ -170,12 +267,12 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(size: 30))
+                .font(Theme.Typo.emptySymbol)
                 .foregroundStyle(Theme.faint)
-            Text(title).font(.system(size: 13)).foregroundStyle(.secondary)
+            Text(title).font(Theme.Typo.body).foregroundStyle(.secondary)
             if !hint.isEmpty {
                 Text(hint)
-                    .font(.system(size: 11))
+                    .font(Theme.Typo.hint)
                     .foregroundStyle(Theme.faint)
                     .multilineTextAlignment(.center)
             }

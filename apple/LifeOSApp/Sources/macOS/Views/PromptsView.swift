@@ -28,7 +28,7 @@ struct PromptsView: View {
 
             Card(title: "原始需求", hint: "把想让 agent 做的事，用大白话写出来") {
                 TextEditor(text: $raw)
-                    .font(.system(size: 13))
+                    .font(Theme.Typo.body)
                     .frame(height: 110)
                     .padding(4)
                     .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
@@ -38,7 +38,7 @@ struct PromptsView: View {
                     Text(PromptService.llmAvailable
                          ? "LLM：\(state.config.openAIModel)"
                          : "未设置 OPENAI_API_KEY，只能生成脚手架")
-                        .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                        .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                     Spacer()
                     Button("生成脚手架") { Task { await generate(useLLM: false) } }
                         .disabled(raw.trimmingCharacters(in: .whitespaces).isEmpty || busy)
@@ -52,12 +52,12 @@ struct PromptsView: View {
 
             Card(title: "已重写的提示词", hint: "都在 prompts/01_rewritten/，随仓库版本化") {
                 if history.isEmpty {
-                    Text("还没有生成过").font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    Text("还没有生成过").font(Theme.Typo.list).foregroundStyle(Theme.faint)
                 } else if isSnapshotting {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(history.prefix(8), id: \.self) { url in
                             Text(url.deletingPathExtension().lastPathComponent)
-                                .font(.system(size: 11, design: .monospaced))
+                                .font(Theme.Typo.mono)
                         }
                     }
                 } else {
@@ -66,7 +66,7 @@ struct PromptsView: View {
                         set: { newValue in if let newValue { open(newValue) } }
                     )) { url in
                         Text(url.deletingPathExtension().lastPathComponent)
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Theme.Typo.mono)
                             .tag(url)
                     }
                     .frame(minHeight: 180)
@@ -81,7 +81,7 @@ struct PromptsView: View {
         VStack(alignment: .leading, spacing: Theme.gap) {
             Card(title: "提示词文档", hint: "五段式：角色 / 背景 / 目标 / 约束 / 输出格式 / 验收标准") {
                 TextEditor(text: $content)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(Theme.Typo.monoList)
                     .frame(minHeight: 420)
                     .padding(4)
                     .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
@@ -89,7 +89,7 @@ struct PromptsView: View {
 
                 HStack {
                     Text(currentURL?.path ?? "")
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(Theme.Typo.monoSmall)
                         .foregroundStyle(Theme.faint).lineLimit(1).truncationMode(.middle)
                     Spacer()
                     Button("复制") {

@@ -33,9 +33,9 @@ struct RootView: View {
 
     private var brand: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("Life Workflow OS").font(.system(size: 14, weight: .bold))
+            Text("Life Workflow OS").font(Theme.Typo.sidebarTitle)
             Text("捕捉 → 整理 → 执行 → 复盘 → 归档")
-                .font(.system(size: 10))
+                .font(Theme.Typo.micro)
                 .foregroundStyle(Theme.faint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -64,7 +64,7 @@ struct RootView: View {
                 ProgressView().controlSize(.small)
             }
             Text(state.statusMessage)
-                .font(.system(size: 11))
+                .font(Theme.Typo.hint)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Spacer(minLength: 8)
@@ -75,19 +75,19 @@ struct RootView: View {
                 } label: {
                     Label("\(state.conflictCount) 处同步冲突待处理",
                           systemImage: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11))
+                        .font(Theme.Typo.hint)
                         .foregroundStyle(.orange)
                 }
                 .buttonStyle(.plain)
                 .help(state.attentionWarnings.map(\.message).joined(separator: "\n"))
             } else if !state.warnings.isEmpty {
                 Label("\(state.warnings.count) 条提醒", systemImage: "info.circle")
-                    .font(.system(size: 11))
+                    .font(Theme.Typo.hint)
                     .foregroundStyle(Theme.faint)
                     .help(state.warnings.map(\.message).joined(separator: "\n"))
             }
             Text("\(state.items.count) 条记录")
-                .font(.system(size: 11))
+                .font(Theme.Typo.hint)
                 .foregroundStyle(Theme.faint)
         }
         .padding(.horizontal, 14)

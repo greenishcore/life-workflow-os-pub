@@ -106,18 +106,18 @@ enum Snapshot {
         var body: some View {
             HStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Life Workflow OS").font(.system(size: 14, weight: .bold))
+                    Text("Life Workflow OS").font(Theme.Typo.sidebarTitle)
                     Text("捕捉 → 整理 → 执行 → 复盘 → 归档")
-                        .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                        .font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                     Divider().padding(.vertical, 8)
                     ForEach(NavGroup.allCases) { group in
                         if !group.title.isEmpty {
-                            Text(group.title).font(.system(size: 10, weight: .semibold))
+                            Text(group.title).font(Theme.Typo.microStrong)
                                 .foregroundStyle(Theme.faint).padding(.top, 6)
                         }
                         ForEach(group.destinations) { d in
                             Label(d.title, systemImage: d.symbol)
-                                .font(.system(size: 12))
+                                .font(Theme.Typo.list)
                                 .foregroundStyle(d == destination ? Theme.accent : .secondary)
                                 .fontWeight(d == destination ? .semibold : .regular)
                                 .padding(.vertical, 3)

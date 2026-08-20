@@ -35,7 +35,7 @@ struct HeatmapCalendar: View {
                 // 星期标签（一 / 三 / 五 / 日）
                 for (i, label) in ["一", "", "三", "", "五", "", "日"].enumerated() where !label.isEmpty {
                     ctx.draw(
-                        Text(label).font(.system(size: 9)).foregroundStyle(Theme.faint),
+                        Text(label).font(Theme.Typo.axis).foregroundStyle(Theme.faint),
                         at: CGPoint(x: leftPad - 8, y: topPad + CGFloat(i) * step + cell / 2),
                         anchor: .trailing)
                 }
@@ -49,7 +49,7 @@ struct HeatmapCalendar: View {
                         lastMonth = month
                         lastLabelWeek = w
                         ctx.draw(
-                            Text("\(month)月").font(.system(size: 9)).foregroundStyle(Theme.faint),
+                            Text("\(month)月").font(Theme.Typo.axis).foregroundStyle(Theme.faint),
                             at: CGPoint(x: leftPad + CGFloat(w) * step, y: 8), anchor: .leading)
                     }
                 }

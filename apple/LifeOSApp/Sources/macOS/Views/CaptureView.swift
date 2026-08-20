@@ -35,7 +35,7 @@ struct CaptureView: View {
     private var captureCard: some View {
         Card(title: "随手记", hint: "⌘↩ 直接捕获到 Inbox") {
             TextEditor(text: $text)
-                .font(.system(size: 13))
+                .font(Theme.Typo.body)
                 .frame(minHeight: 110)
                 .padding(6)
                 .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
@@ -44,7 +44,7 @@ struct CaptureView: View {
                 .overlay(alignment: .topLeading) {
                     if text.isEmpty {
                         Text("突然想到的点子、待办、一句灵感…")
-                            .font(.system(size: 13))
+                            .font(Theme.Typo.body)
                             .foregroundStyle(Theme.faint)
                             .padding(.horizontal, 11)
                             .padding(.vertical, 12)
@@ -53,7 +53,7 @@ struct CaptureView: View {
                 }
 
             HStack {
-                Text(hint).font(.system(size: 11)).foregroundStyle(Theme.faint)
+                Text(hint).font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                 Spacer()
                 Button("建为想法…") { Task { await promote() } }
                     .disabled(trimmed.isEmpty)
@@ -84,14 +84,14 @@ struct CaptureView: View {
             }
 
             Text("首次运行会申请权限：系统设置 → 隐私与安全性 → 提醒事项 / 日历")
-                .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
 
             if !log.isEmpty {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
                         ForEach(Array(log.enumerated()), id: \.offset) { _, line in
                             Text(line)
-                                .font(.system(size: 11, design: .monospaced))
+                                .font(Theme.Typo.mono)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .textSelection(.enabled)
@@ -117,7 +117,7 @@ struct CaptureView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(captures, id: \.date) { group in
                         Text(group.date)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(Theme.Typo.hintStrong)
                             .foregroundStyle(.secondary)
                         ForEach(Array(group.lines.enumerated()), id: \.offset) { _, raw in
                             CaptureRow(date: group.date, raw: raw) { await refreshCaptures() }
@@ -239,14 +239,14 @@ private struct CaptureRow: View {
             .toggleStyle(.checkbox)
 
             Text(content)
-                .font(.system(size: 12))
+                .font(Theme.Typo.list)
                 .strikethrough(isDone)
                 .foregroundStyle(isDone ? Theme.faint : .primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Button("→ 想法") { Task { await promote() } }
                 .buttonStyle(.link)
-                .font(.system(size: 11))
+                .font(Theme.Typo.hint)
                 .help("提升为带状态机与思路注释的想法")
         }
     }

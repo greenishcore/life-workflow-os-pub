@@ -74,7 +74,7 @@ struct ArchGraph: View {
                 ctx.fill(Path(roundedRect: rect.insetBy(dx: 2, dy: 3), cornerRadius: 8),
                          with: .color(Color.primary.opacity(0.035)))
             }
-            ctx.draw(Text(band.layer.name).font(.system(size: 11, weight: .semibold))
+            ctx.draw(Text(band.layer.name).font(Theme.Typo.hintStrong)
                         .foregroundStyle(Theme.faint),
                      at: CGPoint(x: 12, y: rect.midY), anchor: .leading)
         }
@@ -116,10 +116,10 @@ struct ArchGraph: View {
                      with: .color(tint.opacity(active ? 0.3 : 0.14)))
             ctx.stroke(Path(roundedRect: rect, cornerRadius: 7),
                        with: .color(tint.opacity(active ? 1 : 0.55)), lineWidth: active ? 2 : 1)
-            ctx.draw(Text(module.name).font(.system(size: 11, weight: .semibold)),
+            ctx.draw(Text(module.name).font(Theme.Typo.hintStrong),
                      at: CGPoint(x: rect.midX, y: rect.midY - 6))
             ctx.draw(Text("\(module.fileCount) 文件 · \(module.lineCount) 行")
-                        .font(.system(size: 9)).foregroundStyle(Theme.faint),
+                        .font(Theme.Typo.axis).foregroundStyle(Theme.faint),
                      at: CGPoint(x: rect.midX, y: rect.midY + 8))
         }
     }

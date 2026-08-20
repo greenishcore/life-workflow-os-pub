@@ -87,7 +87,7 @@ struct IdeasView: View {
 
             HStack {
                 Text("显示 \(filtered.count) / 共 \(state.items.count) 条")
-                    .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                 Spacer()
                 Button { Task { await createNew() } } label: {
                     Label("新建", systemImage: "plus")
@@ -108,7 +108,7 @@ struct IdeasView: View {
                 VStack(alignment: .leading, spacing: Theme.gap) {
                     TextField("想法标题", text: binding.title)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typo.sectionTitle)
                         .padding(8)
                         .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 6))
                         .onChange(of: binding.wrappedValue.title) { _, _ in isDirty = true }
@@ -159,7 +159,7 @@ struct IdeasView: View {
                             set: { item.wrappedValue.energy = Int($0); isDirty = true }
                         ), in: 0...10, step: 1)
                         Text("\(item.wrappedValue.energy ?? 0)")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(Theme.Typo.monoList)
                             .frame(width: 22)
                     }
                 }
@@ -170,7 +170,7 @@ struct IdeasView: View {
                             set: { item.wrappedValue.progress = Int($0); isDirty = true }
                         ), in: 0...100, step: 5)
                         Text("\(item.wrappedValue.progress ?? 0)%")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(Theme.Typo.monoList)
                             .frame(width: 38)
                     }
                 }
@@ -189,7 +189,7 @@ struct IdeasView: View {
             }
 
             Text(metaLine(item.wrappedValue))
-                .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                 .textSelection(.enabled)
         }
     }
@@ -199,7 +199,7 @@ struct IdeasView: View {
              hint: "记录「为什么想到它、想法怎么变的」——复盘时看的是过程，不只是结论") {
             if item.wrappedValue.thinkingNotes.isEmpty {
                 Text("还没有思路注释。第一条建议写「为什么会想到这个」。")
-                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(item.wrappedValue.thinkingNotes.enumerated()), id: \.element.id) { index, note in
@@ -214,13 +214,13 @@ struct IdeasView: View {
                             .frame(width: 6)
 
                             Text(note.t)
-                                .font(.system(size: 11, design: .monospaced))
+                                .font(Theme.Typo.mono)
                                 .foregroundStyle(Theme.faint)
                                 .frame(width: 72, alignment: .leading)
                                 .padding(.top, 2)
 
                             Text(note.note)
-                                .font(.system(size: 12))
+                                .font(Theme.Typo.list)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.top, 2)
 
@@ -256,7 +256,7 @@ struct IdeasView: View {
                     isDirty = true
                 }
             ))
-            .font(.system(size: 12))
+            .font(Theme.Typo.list)
             .frame(height: 64)
             .padding(4)
             .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
@@ -270,7 +270,7 @@ struct IdeasView: View {
                 get: { item.wrappedValue.body },
                 set: { item.wrappedValue.body = $0; isDirty = true }
             ))
-            .font(.system(size: 12, design: .monospaced))
+            .font(Theme.Typo.monoList)
             .frame(minHeight: 150)
             .padding(4)
             .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
@@ -282,7 +282,7 @@ struct IdeasView: View {
         HStack {
             if isDirty {
                 Label("未保存的修改", systemImage: "circle.fill")
-                    .font(.system(size: 11)).foregroundStyle(.orange)
+                    .font(Theme.Typo.hint).foregroundStyle(.orange)
             }
             Spacer()
             Button("在访达中显示") {
@@ -322,7 +322,7 @@ struct IdeasView: View {
 
     private func labeled<V: View>(_ title: String, @ViewBuilder content: () -> V) -> some View {
         HStack(spacing: 6) {
-            Text(title).font(.system(size: 12)).foregroundStyle(.secondary)
+            Text(title).font(Theme.Typo.list).foregroundStyle(.secondary)
             content()
         }
     }
@@ -394,16 +394,16 @@ private struct ItemRow: View {
                 HStack(spacing: 6) {
                     Circle().fill(item.status.color).frame(width: 7, height: 7)
                     Text(item.title)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(Theme.Typo.cardTitle)
                         .lineLimit(1)
                 }
                 HStack(spacing: 5) {
                     Text(item.lastActivity)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(Theme.Typo.mono)
                         .foregroundStyle(Theme.faint)
                     if !item.thinkingNotes.isEmpty {
                         Text("✎\(item.thinkingNotes.count)")
-                            .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                            .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                             .help("\(item.thinkingNotes.count) 条思路注释")
                     }
                     ForEach(item.tags.prefix(2), id: \.self) { TagChip(text: $0) }
@@ -428,7 +428,7 @@ private struct ProgressRing: View {
                 .trim(from: 0, to: CGFloat(value) / 100)
                 .stroke(Theme.accent, style: .init(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-            Text("\(value)").font(.system(size: 9)).foregroundStyle(.secondary)
+            Text("\(value)").font(Theme.Typo.axis).foregroundStyle(.secondary)
         }
         .frame(width: 30, height: 30)
     }

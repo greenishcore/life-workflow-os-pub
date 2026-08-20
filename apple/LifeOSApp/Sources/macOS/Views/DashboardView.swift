@@ -94,7 +94,7 @@ struct DashboardView: View {
                                 .annotation(position: .top, spacing: 2) {
                                     if line.priority == .high {
                                         Text(line.title)
-                                            .font(.system(size: 9))
+                                            .font(Theme.Typo.axis)
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)
                                     }
@@ -116,7 +116,7 @@ struct DashboardView: View {
                     ForEach(Status.allCases, id: \.self) { s in
                         HStack(spacing: 4) {
                             Circle().fill(s.color).frame(width: 7, height: 7)
-                            Text(s.label).font(.system(size: 11)).foregroundStyle(.secondary)
+                            Text(s.label).font(Theme.Typo.hint).foregroundStyle(.secondary)
                         }
                     }
                     Spacer()
@@ -137,7 +137,7 @@ struct DashboardView: View {
                     .cornerRadius(4)
                     .annotation(position: .top) {
                         Text("\(counts[s] ?? 0)")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(Theme.Typo.microStrong)
                             .foregroundStyle(counts[s] ?? 0 > 0 ? .primary : Theme.faint)
                     }
             }
@@ -152,7 +152,7 @@ struct DashboardView: View {
         Card(title: "标签 TopN") {
             let tags = Stats.tagCounts(state.items, top: 8)
             if tags.isEmpty {
-                Text("还没有打标签").font(.system(size: 12)).foregroundStyle(Theme.faint)
+                Text("还没有打标签").font(Theme.Typo.list).foregroundStyle(Theme.faint)
                     .frame(height: 150)
             } else {
                 Chart(tags, id: \.tag) { entry in
@@ -161,7 +161,7 @@ struct DashboardView: View {
                         .foregroundStyle(Theme.accent)
                         .cornerRadius(3)
                         .annotation(position: .trailing, spacing: 4) {
-                            Text("\(entry.count)").font(.system(size: 10))
+                            Text("\(entry.count)").font(Theme.Typo.micro)
                                 .foregroundStyle(.secondary)
                         }
                 }
@@ -183,7 +183,7 @@ struct DashboardView: View {
             let rows = Stats.trajectory(state.items).prefix(8)
             if rows.isEmpty {
                 Text("还没有思路注释。打开一个想法，把「为什么想到它、想法怎么变的」记下来。")
-                    .font(.system(size: 12))
+                    .font(Theme.Typo.list)
                     .foregroundStyle(Theme.faint)
             } else {
                 VStack(spacing: 0) {
@@ -194,18 +194,18 @@ struct DashboardView: View {
                         } label: {
                             HStack(alignment: .top, spacing: 10) {
                                 Text(row.date)
-                                    .font(.system(size: 11, design: .monospaced))
+                                    .font(Theme.Typo.mono)
                                     .foregroundStyle(Theme.faint)
                                     .frame(width: 74, alignment: .leading)
                                 Circle().fill(row.item.status.color)
                                     .frame(width: 7, height: 7).padding(.top, 5)
                                 Text(row.item.title)
-                                    .font(.system(size: 12))
+                                    .font(Theme.Typo.list)
                                     .foregroundStyle(.secondary)
                                     .frame(width: 120, alignment: .leading)
                                     .lineLimit(1)
                                 Text(row.note)
-                                    .font(.system(size: 12))
+                                    .font(Theme.Typo.list)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .multilineTextAlignment(.leading)
                             }

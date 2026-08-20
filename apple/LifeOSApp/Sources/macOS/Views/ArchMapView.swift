@@ -27,7 +27,7 @@ struct ArchMapView: View {
             if let error = state.archError {
                 Card(title: "无法加载架构地图") {
                     Label(error, systemImage: "exclamationmark.triangle")
-                        .font(.system(size: 12)).foregroundStyle(.orange)
+                        .font(Theme.Typo.list).foregroundStyle(.orange)
                 }
             } else if let model {
                 kpis(model)
@@ -46,7 +46,7 @@ struct ArchMapView: View {
                     HStack {
                         if state.isLoadingArch { ProgressView().controlSize(.small) }
                         Text(state.isLoadingArch ? "正在扫描源码…" : "尚未加载")
-                            .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                            .font(Theme.Typo.list).foregroundStyle(Theme.faint)
                     }
                 }
             }
@@ -100,17 +100,17 @@ struct ArchMapView: View {
                                              : (inv.severity == .blocking ? .red : .orange))
                         VStack(alignment: .leading, spacing: 3) {
                             HStack(spacing: 6) {
-                                Text(inv.title).font(.system(size: 13, weight: .semibold))
+                                Text(inv.title).font(Theme.Typo.cardTitle)
                                 Badge(text: inv.severity.label,
                                       color: inv.severity == .blocking ? .red : .orange)
                             }
                             // 理由里带 **加粗**，用 Markdown 渲染，否则星号会原样显示
-                            Text(.init(inv.rationale)).font(.system(size: 11))
+                            Text(.init(inv.rationale)).font(Theme.Typo.hint)
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                             ForEach(Array(inv.violations.enumerated()), id: \.offset) { _, v in
                                 Text("· \(v.file)\(v.line > 0 ? ":\(v.line)" : "")  \(v.detail)")
-                                    .font(.system(size: 10, design: .monospaced))
+                                    .font(Theme.Typo.monoSmall)
                                     .foregroundStyle(inv.severity == .blocking ? .red : .orange)
                             }
                         }
@@ -138,7 +138,7 @@ struct ArchMapView: View {
                     HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(legendColor(key)).frame(width: 9, height: 9)
-                        Text(label).font(.system(size: 11)).foregroundStyle(.secondary)
+                        Text(label).font(Theme.Typo.hint).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
@@ -161,7 +161,7 @@ struct ArchMapView: View {
             if state.benchmarks.isEmpty {
                 HStack {
                     Text("还没跑过基准。点右边跑一次，约 1 秒。")
-                        .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                        .font(Theme.Typo.list).foregroundStyle(Theme.faint)
                     Spacer()
                     runBenchButton
                 }
@@ -172,13 +172,13 @@ struct ArchMapView: View {
                             Image(systemName: result.overBudget
                                   ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                                 .foregroundStyle(result.overBudget ? .orange : .green)
-                            Text(result.name).font(.system(size: 12, weight: .semibold))
+                            Text(result.name).font(Theme.Typo.listStrong)
                             Badge(text: stageName(result.stage), color: Theme.accent)
                             Spacer()
                             Text(String(format: "%.3f %@", result.value, result.unit))
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(Theme.Typo.monoList)
                             Text(String(format: "预算 %.2f", result.budget))
-                                .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                                .font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                         }
                         // 预算占比条
                         GeometryReader { geo in
@@ -190,7 +190,7 @@ struct ArchMapView: View {
                             }
                         }
                         .frame(height: 4)
-                        Text(result.detail).font(.system(size: 10)).foregroundStyle(Theme.faint)
+                        Text(result.detail).font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                     }
                     .padding(.vertical, 5)
                     Divider()
@@ -198,7 +198,7 @@ struct ArchMapView: View {
                 HStack {
                     if let last = state.benchHistory.first {
                         Text("上次：\(last.timestamp.prefix(16).replacingOccurrences(of: "T", with: " ")) · \(last.configuration) 构建 · 共 \(state.benchHistory.count) 次记录")
-                            .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                            .font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                     }
                     Spacer()
                     runBenchButton
@@ -223,19 +223,19 @@ struct ArchMapView: View {
                     hint: "try? 不一定是坏事——目录已存在就忽略是合理的；它是「错误在哪被静默吞掉」的信号，值得看一眼") {
             if ranked.isEmpty {
                 Text("没有静默吞错，也没有崩溃风险写法。")
-                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 ForEach(ranked) { module in
                     HStack(spacing: 10) {
-                        Text(module.name).font(.system(size: 12, weight: .semibold))
+                        Text(module.name).font(Theme.Typo.listStrong)
                             .frame(width: 90, alignment: .leading)
-                        Text("\(module.lineCount) 行").font(.system(size: 10))
+                        Text("\(module.lineCount) 行").font(Theme.Typo.micro)
                             .foregroundStyle(Theme.faint).frame(width: 56, alignment: .trailing)
                         Text("try? \(module.robustness.silencedErrors)")
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Theme.Typo.mono)
                             .frame(width: 62, alignment: .leading)
                         Text(String(format: "%.1f/百行", module.silencedPer100Lines))
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Theme.Typo.mono)
                             .foregroundStyle(module.silencedPer100Lines >= 2 ? .orange : .secondary)
                             .frame(width: 76, alignment: .leading)
                         if module.robustness.crashRisks > 0 {
@@ -243,7 +243,7 @@ struct ArchMapView: View {
                         }
                         Spacer()
                         Text("throws \(module.robustness.throwingFunctions) · catch \(module.robustness.catchBlocks)")
-                            .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                            .font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                     }
                     .padding(.vertical, 3)
                 }
@@ -256,20 +256,20 @@ struct ArchMapView: View {
              hint: "来自 logs/run-log.jsonl 的真实操作，近 30 天；样本少时分位数意义有限") {
             if state.runtimeOps.isEmpty {
                 Text("近 30 天还没有运行日志。做一次格式转换或版本归档，系统会自动留痕。")
-                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 ForEach(state.runtimeOps) { op in
                     HStack(spacing: 10) {
-                        Text(op.kind).font(.system(size: 12, weight: .semibold))
+                        Text(op.kind).font(Theme.Typo.listStrong)
                             .frame(width: 100, alignment: .leading)
-                        Text("\(op.count) 次").font(.system(size: 11))
+                        Text("\(op.count) 次").font(Theme.Typo.hint)
                             .foregroundStyle(Theme.faint).frame(width: 50, alignment: .leading)
                         Text(String(format: "成功 %.0f%%", op.successRate * 100))
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Theme.Typo.mono)
                             .foregroundStyle(op.successRate < 1 ? .orange : .secondary)
                             .frame(width: 76, alignment: .leading)
                         Text(String(format: "P50 %.0fms · P95 %.0fms", op.p50, op.p95))
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Theme.Typo.mono)
                         if let hit = op.cacheHitRate {
                             Badge(text: String(format: "缓存命中 %.0f%%", hit * 100),
                                   color: hit >= 0.5 ? .green : .orange)
@@ -293,28 +293,28 @@ struct ArchMapView: View {
              hint: "风险 = 近期改动次数 × 被依赖数 ÷（有测试则减半）。排在前面的，改之前先补测试") {
             if state.archRisks.isEmpty {
                 Text("正在统计变更频率…（需要 git）")
-                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(state.archRisks.prefix(isSnapshotting ? 6 : 20).enumerated()),
                             id: \.element.id) { index, risk in
                         if index > 0 { Divider() }
                         HStack(spacing: 10) {
-                            Text("\(index + 1)").font(.system(size: 11, design: .monospaced))
+                            Text("\(index + 1)").font(Theme.Typo.mono)
                                 .foregroundStyle(Theme.faint).frame(width: 18)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(risk.name).font(.system(size: 12, weight: .semibold))
-                                Text(risk.explanation).font(.system(size: 10))
+                                Text(risk.name).font(Theme.Typo.listStrong)
+                                Text(risk.explanation).font(Theme.Typo.micro)
                                     .foregroundStyle(.secondary)
                             }
                             Spacer(minLength: 8)
                             if !risk.hasTests {
                                 Badge(text: "无测试", color: .orange)
                             }
-                            Text("\(risk.lines) 行").font(.system(size: 11))
+                            Text("\(risk.lines) 行").font(Theme.Typo.hint)
                                 .foregroundStyle(Theme.faint)
                             Text(String(format: "%.0f", risk.risk))
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .font(Theme.Typo.metricSmall)
                                 .foregroundStyle(risk.risk >= 20 ? .red
                                                  : (risk.risk >= 8 ? .orange : .secondary))
                                 .frame(width: 36, alignment: .trailing)
@@ -334,26 +334,26 @@ struct ArchMapView: View {
             HStack(alignment: .top, spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("依赖（\(model.fanOut(module.id))）")
-                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                        .font(Theme.Typo.hintStrong).foregroundStyle(.secondary)
                     ForEach(model.edges.filter { $0.from == module.id }, id: \.to) { edge in
                         Text("→ \(model.module(id: edge.to)?.name ?? edge.to)")
-                            .font(.system(size: 11))
+                            .font(Theme.Typo.hint)
                     }
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("被依赖（\(model.fanIn(module.id))）")
-                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                        .font(Theme.Typo.hintStrong).foregroundStyle(.secondary)
                     ForEach(model.edges.filter { $0.to == module.id }, id: \.from) { edge in
                         Text("← \(model.module(id: edge.from)?.name ?? edge.from)")
-                            .font(.system(size: 11))
+                            .font(Theme.Typo.hint)
                     }
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("文件（\(module.fileCount)）")
-                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                        .font(Theme.Typo.hintStrong).foregroundStyle(.secondary)
                     ForEach(module.files.prefix(12)) { file in
                         Text("\((file.path as NSString).lastPathComponent) · \(file.lines) 行")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(Theme.Typo.monoSmall)
                             .foregroundStyle(Theme.faint)
                     }
                 }

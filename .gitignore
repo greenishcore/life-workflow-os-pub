@@ -37,6 +37,9 @@ venv/
 .cache/
 converted/
 
+# 快照夹具（由 tools/snapshot.sh 从 seed/ 重建，不必入库）
+.snap/
+
 # 系统
 *.log
 

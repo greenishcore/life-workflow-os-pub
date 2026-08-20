@@ -38,7 +38,7 @@ struct ArchiveView: View {
                       ? "从 vault 向上没找到 git 仓库，归档功能不可用"
                       : "该目录不是 git 仓库，归档功能不可用",
                       systemImage: "exclamationmark.triangle")
-                    .font(.system(size: 12)).foregroundStyle(.orange)
+                    .font(Theme.Typo.list).foregroundStyle(.orange)
             } else {
                 HStack(spacing: 14) {
                     Label(status.branch, systemImage: "arrow.triangle.branch")
@@ -50,25 +50,25 @@ struct ArchiveView: View {
                         .foregroundStyle(status.dirty ? .orange : .green)
                     Spacer()
                 }
-                .font(.system(size: 12))
+                .font(Theme.Typo.list)
 
                 if let repoURL {
-                    Text(repoURL.path).font(.system(size: 11, design: .monospaced))
+                    Text(repoURL.path).font(Theme.Typo.mono)
                         .foregroundStyle(Theme.faint).textSelection(.enabled)
                 }
                 if !status.remote.isEmpty {
-                    Text(status.remote).font(.system(size: 11, design: .monospaced))
+                    Text(status.remote).font(Theme.Typo.mono)
                         .foregroundStyle(Theme.faint).textSelection(.enabled)
                 }
                 if !status.lastCommit.isEmpty {
-                    Text("最近：\(status.lastCommit)").font(.system(size: 11))
+                    Text("最近：\(status.lastCommit)").font(Theme.Typo.hint)
                         .foregroundStyle(.secondary)
                 }
                 if !status.changed.isEmpty {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 1) {
                             ForEach(Array(status.changed.prefix(60).enumerated()), id: \.offset) { _, line in
-                                Text(line).font(.system(size: 11, design: .monospaced))
+                                Text(line).font(Theme.Typo.mono)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
@@ -96,7 +96,7 @@ struct ArchiveView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
                         ForEach(Array(log.enumerated()), id: \.offset) { _, line in
-                            Text(line).font(.system(size: 11, design: .monospaced))
+                            Text(line).font(Theme.Typo.mono)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .textSelection(.enabled)
@@ -119,26 +119,26 @@ struct ArchiveView: View {
                     .disabled(!status.isRepo || version.isEmpty || busy)
             }
             Text(tags.isEmpty ? "还没有里程碑" : "已有里程碑：\(tags.prefix(8).joined(separator: "、"))")
-                .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
         }
     }
 
     private var historyCard: some View {
         Card(title: "提交历史") {
             if history.isEmpty {
-                Text("暂无提交").font(.system(size: 12)).foregroundStyle(Theme.faint)
+                Text("暂无提交").font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 VStack(spacing: 0) {
                     ForEach(isSnapshotting ? Array(history.prefix(8)) : history) { commit in
                         HStack(spacing: 10) {
                             Text(commit.hash)
-                                .font(.system(size: 11, design: .monospaced))
+                                .font(Theme.Typo.mono)
                                 .foregroundStyle(Theme.accent)
                             Text(commit.when)
-                                .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                                .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                                 .frame(width: 90, alignment: .leading)
                             Text(commit.subject)
-                                .font(.system(size: 12)).lineLimit(1)
+                                .font(Theme.Typo.list).lineLimit(1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.vertical, 3)

@@ -78,7 +78,7 @@ struct FlowDiagram: View {
                      with: .color(tint.opacity(active ? 0.3 : 0.14)))
             ctx.stroke(Path(roundedRect: rect, cornerRadius: 6),
                        with: .color(tint.opacity(active ? 1 : 0.5)), lineWidth: active ? 1.8 : 1)
-            ctx.draw(Text(name).font(.system(size: 10, weight: .medium)),
+            ctx.draw(Text(name).font(Theme.Typo.microMedium),
                      at: CGPoint(x: rect.midX, y: rect.midY))
         }
     }

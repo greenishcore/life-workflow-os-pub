@@ -30,14 +30,14 @@ struct ConvertView: View {
             dropZone
 
             HStack(spacing: 8) {
-                Text("目标格式").font(.system(size: 12)).foregroundStyle(.secondary)
+                Text("目标格式").font(Theme.Typo.list).foregroundStyle(.secondary)
                 Picker("", selection: $target) {
                     ForEach(ConvertService.Target.allCases, id: \.self) {
                         Text("\($0.rawValue) · \($0.label)").tag($0)
                     }
                 }.labelsHidden().frame(width: 190)
 
-                Text("输出到").font(.system(size: 12)).foregroundStyle(.secondary)
+                Text("输出到").font(Theme.Typo.list).foregroundStyle(.secondary)
                 TextField("留空 = 缓存目录旁的 out/", text: $customOutput)
 
                 Button("开始转换") { Task { await convert() } }
@@ -51,7 +51,7 @@ struct ConvertView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         ForEach(Array(log.enumerated()), id: \.offset) { _, line in
                             Text(line)
-                                .font(.system(size: 11, design: .monospaced))
+                                .font(Theme.Typo.mono)
                                 .foregroundStyle(.secondary)
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -80,14 +80,14 @@ struct ConvertView: View {
     private var dropZone: some View {
         VStack(spacing: 6) {
             Image(systemName: source == nil ? "arrow.down.doc" : "doc.text")
-                .font(.system(size: 22))
+                .font(Theme.Typo.display)
                 .foregroundStyle(isDropTargeted ? Theme.accent : Theme.faint)
             Text(source?.lastPathComponent ?? "把 PDF / Word / PPT / HTML / Markdown 拖到这里")
-                .font(.system(size: 12))
+                .font(Theme.Typo.list)
                 .foregroundStyle(source == nil ? Theme.faint : .primary)
             if let source {
                 Text(source.deletingLastPathComponent().path)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(Theme.Typo.monoSmall)
                     .foregroundStyle(Theme.faint).lineLimit(1)
             }
             Button("选择文件…") { pick() }.controlSize(.small)
@@ -122,7 +122,7 @@ struct ConvertView: View {
                 Text(cache.count == 0
                      ? "暂无缓存 · \(state.config.cacheURL.path)"
                      : "\(cache.count) 条缓存 · \(cache.bytes / 1024) KB · \(state.config.cacheURL.path)")
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(Theme.Typo.mono)
                     .foregroundStyle(Theme.faint)
                 Spacer()
                 Button("清空缓存") {
@@ -144,8 +144,8 @@ struct ConvertView: View {
                     HStack(spacing: 6) {
                         Image(systemName: tool.installed ? "checkmark.circle.fill" : "circle")
                             .foregroundStyle(tool.installed ? .green : Theme.faint)
-                        Text(tool.name).font(.system(size: 11, weight: .medium))
-                        Text(tool.detail).font(.system(size: 11))
+                        Text(tool.name).font(Theme.Typo.hintMedium)
+                        Text(tool.detail).font(Theme.Typo.hint)
                             .foregroundStyle(Theme.faint).lineLimit(1).truncationMode(.middle)
                     }
                 }

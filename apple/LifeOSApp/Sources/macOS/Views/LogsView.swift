@@ -71,7 +71,7 @@ struct LogsView: View {
                             .foregroundStyle(s.color)
                             .cornerRadius(4)
                             .annotation(position: .top) {
-                                Text("\(stats.byStatus[s] ?? 0)").font(.system(size: 10))
+                                Text("\(stats.byStatus[s] ?? 0)").font(Theme.Typo.micro)
                             }
                     }
                     .chartYAxis(.hidden)
@@ -88,7 +88,7 @@ struct LogsView: View {
     }
 
     private var emptyChart: some View {
-        Text("暂无数据").font(.system(size: 12)).foregroundStyle(Theme.faint)
+        Text("暂无数据").font(Theme.Typo.list).foregroundStyle(Theme.faint)
             .frame(maxWidth: .infinity, minHeight: 140)
     }
 
@@ -102,7 +102,7 @@ struct LogsView: View {
                     .foregroundStyle(color)
                     .cornerRadius(3)
                     .annotation(position: .trailing, spacing: 4) {
-                        Text("\(entry.1)").font(.system(size: 10)).foregroundStyle(.secondary)
+                        Text("\(entry.1)").font(Theme.Typo.micro).foregroundStyle(.secondary)
                     }
             }
             .chartXAxis(.hidden)
@@ -176,7 +176,7 @@ struct LogsView: View {
                 Text(logs.isEmpty
                      ? "还没有运行日志。用一次格式转换或版本归档，系统会自动留痕，这里就有料可算了。"
                      : "本期没有值得沉淀的模式——错误没有重复，流程也没有稳定复现。")
-                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(state.proposals.enumerated()), id: \.element.id) { index, p in
@@ -185,11 +185,11 @@ struct LogsView: View {
                             Badge(text: p.kind.label,
                                   color: p.kind.isActionable ? Theme.accent : .orange)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(p.title).font(.system(size: 13, weight: .semibold))
-                                Text(p.rationale).font(.system(size: 11))
+                                Text(p.title).font(Theme.Typo.cardTitle)
+                                Text(p.rationale).font(Theme.Typo.hint)
                                     .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                                 ForEach(p.evidence, id: \.self) { e in
-                                    Text(e).font(.system(size: 10, design: .monospaced))
+                                    Text(e).font(Theme.Typo.monoSmall)
                                         .foregroundStyle(Theme.faint)
                                 }
                             }
@@ -211,7 +211,7 @@ struct LogsView: View {
         Card(title: "技能库", hint: "已验证的可复用操作；用过一次就点「记一次」，闲置太久会被提醒") {
             if state.skills.isEmpty {
                 Text("技能库是空的。上面有可沉淀的提议时点「采纳」，或手动往 skills/ 里加。")
-                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(state.skills.enumerated()), id: \.element.id) { index, skill in
@@ -219,15 +219,15 @@ struct LogsView: View {
                         HStack(spacing: 10) {
                             Badge(text: skill.status.label, color: Color(hex: skill.status.colorHex))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(skill.name).font(.system(size: 13, weight: .semibold))
+                                Text(skill.name).font(Theme.Typo.cardTitle)
                                 if !skill.trigger.isEmpty {
-                                    Text(skill.trigger).font(.system(size: 11))
+                                    Text(skill.trigger).font(Theme.Typo.hint)
                                         .foregroundStyle(.secondary)
                                 }
                             }
                             Spacer(minLength: 8)
                             Text(skill.uses == 0 ? "未用过" : "用过 \(skill.uses) 次")
-                                .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                                .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
                             if skill.isStale() {
                                 Image(systemName: "clock.badge.exclamationmark")
                                     .foregroundStyle(.orange)
@@ -304,12 +304,12 @@ private struct LogRow: View {
         HStack(alignment: .top, spacing: 10) {
             Text(log.status.icon)
             Text(log.timestamp.prefix(16).replacingOccurrences(of: "T", with: " "))
-                .font(.system(size: 11, design: .monospaced)).foregroundStyle(Theme.faint)
+                .font(Theme.Typo.mono).foregroundStyle(Theme.faint)
                 .frame(width: 120, alignment: .leading)
-            Text(log.objective).font(.system(size: 12))
+            Text(log.objective).font(Theme.Typo.list)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(log.toolsUsed.joined(separator: ", "))
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(Theme.Typo.hint).foregroundStyle(.secondary)
                 .frame(width: 130, alignment: .leading)
         }
         .padding(.vertical, 4)
