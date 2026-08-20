@@ -139,7 +139,10 @@ public enum ArchExtractor {
         out.append(Invariant(
             id: "kit-no-ui",
             title: "核心包不得依赖 UI 框架",
-            rationale: "核心包要同时供 macOS / iOS（及将来的 watchOS）使用，一旦 import SwiftUI/AppKit，跨端复用就废了",
+            rationale: "核心包要同时供 macOS / iOS（及将来的 watchOS）使用。"
+                + "这是唯一编译器给不了的保护：SwiftUI 在 macOS 与 iOS 上都可用，"
+                + "核心包 import 了照样编过，代价要等到加 watchOS 或核心包变得难测时才显现——"
+                + "延迟且弥散，正是该用门禁挡的那类",
             violations: uiViolations))
 
         // 2. 依赖只能向下
@@ -156,7 +159,10 @@ public enum ArchExtractor {
         out.append(Invariant(
             id: "downward-only",
             title: "依赖只能向下",
-            rationale: "底层不该知道上层存在。反向依赖会让数据层被 UI 变更牵着走，也让单测无法独立",
+            rationale: "底层不该知道上层存在。但分层模型是本文件声明的、不是语言固有的，"
+                + "首次运行就误报过一次（当时是分层定义写错，不是代码错）。"
+                + "在架构还在演进时把它设成硬门禁只会持续要求重新裁定，因此降为参考",
+            severity: .advisory,
             violations: directionViolations))
 
         // 3. macOS 与 iOS 的 UI 互不依赖
@@ -167,7 +173,10 @@ public enum ArchExtractor {
         out.append(Invariant(
             id: "ui-targets-isolated",
             title: "macOS 与 iOS 的 UI 互不依赖",
-            rationale: "两端 UI 刻意各写各的；一旦互相引用，等于变相共用一套界面，平台观感会互相拖累",
+            rationale: "两端 UI 刻意各写各的。**构建系统已经保证了这一点**——"
+                + "macOS 与 iOS 是不同 target（Shared+macOS / Shared+iOS），跨端引用根本编译不过。"
+                + "这里保留只为说明意图，不作门禁",
+            severity: .advisory,
             violations: crossUI.map {
                 .init(file: $0.viaFiles.first ?? "", detail: "\($0.from) → \($0.to)")
             }))
@@ -187,7 +196,10 @@ public enum ArchExtractor {
         out.append(Invariant(
             id: "subprocess-macos-only",
             title: "子进程调用限定 macOS",
-            rationale: "iOS/watchOS 沙盒不允许 fork 子进程；不隔离会在 iOS 上编译通过、运行时才炸",
+            rationale: "iOS 沙盒不允许 fork 子进程。**编译器已经保证了这一点**——"
+                + "iOS SDK 里根本没有 NSTask.h，Process 在 iOS 上不存在，用了就是编译错误。"
+                + "这里保留只为说明意图，不作门禁",
+            severity: .advisory,
             violations: processViolations))
 
         // 5. 每个模块至少被测试引用（参考项，不阻断 CI）

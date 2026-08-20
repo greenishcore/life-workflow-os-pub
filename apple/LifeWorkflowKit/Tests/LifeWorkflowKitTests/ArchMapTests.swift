@@ -124,6 +124,39 @@ struct ArchExtractorTests {
         #expect(model.modules.allSatisfy { !$0.files.isEmpty }, "空模块不该进图")
     }
 
+    // 这条把「只保留一条硬门禁」这个决定固定下来。
+    // 另外三条降级是有理由的：两条编译器/构建系统已经保证（iOS 无 Process、
+    // macOS 与 iOS 是不同 target），一条基于本仓库自己声明的分层模型、误报过一次。
+    // 想再加硬门禁请连同理由一起改，别无声地改回去。
+    @Test("只有「核心包不得依赖 UI 框架」是硬约束")
+    func onlyOneBlockingInvariant() throws {
+        let model = try ArchExtractor.extract(repoRoot: Self.repo).model
+        let blocking = model.invariants.filter { $0.severity == .blocking }
+        #expect(blocking.map(\.id) == ["kit-no-ui"],
+                "硬约束应当只有 kit-no-ui，实际是 \(blocking.map(\.id))")
+        let advisory = Set(model.invariants.filter { $0.severity == .advisory }.map(\.id))
+        #expect(advisory == ["downward-only", "ui-targets-isolated",
+                             "subprocess-macos-only", "kit-modules-tested"])
+    }
+
+    @Test("降级的约束仍然在算、仍然会显示，只是不阻断")
+    func advisoryStillEvaluated() throws {
+        let model = try ArchExtractor.extract(repoRoot: Self.repo).model
+        // 注入一条反向依赖，确认参考项照样报出来
+        let modules = [
+            "low": Module(id: "low", name: "Low", path: "a", layerID: "data", target: "kit",
+                          files: [SourceFile(path: "a/x.swift", lines: 1)]),
+            "high": Module(id: "high", name: "High", path: "b", layerID: "presentation",
+                           target: "macOS", files: [SourceFile(path: "b/y.swift", lines: 1)]),
+        ]
+        let rule = try #require(ArchExtractor
+            .checkInvariants(modules: modules, edges: [Edge(from: "low", to: "high")], scanned: [])
+            .first { $0.id == "downward-only" })
+        #expect(rule.violations.count == 1, "降级不等于不检查")
+        #expect(rule.severity == .advisory)
+        _ = model
+    }
+
     @Test("真实仓库当前零硬约束违例")
     func realRepoHasNoBlockingViolations() throws {
         let model = try ArchExtractor.extract(repoRoot: Self.repo).model

@@ -68,7 +68,9 @@ struct ArchMapView: View {
             StatTile(label: "依赖边", value: "\(model.edges.count)",
                      delta: "按类型引用判定")
             StatTile(label: "硬约束", value: "\(blocking.count - failed)/\(blocking.count)",
-                     delta: failed == 0 ? "全部通过" : "\(failed) 条被违反",
+                     delta: failed == 0
+                        ? "通过 · 另有 \(model.invariants.count - blocking.count) 条参考项"
+                        : "\(failed) 条被违反",
                      color: failed == 0 ? .green : .red)
             StatTile(label: "代码量",
                      value: "\(model.modules.reduce(0) { $0 + $1.lineCount })",
@@ -80,7 +82,7 @@ struct ArchMapView: View {
 
     private func invariantsCard(_ model: ArchModel) -> some View {
         Card(title: "架构约束校验",
-             hint: "硬约束违例会让 CI 失败——文档里的规则到这里才真正生效") {
+             hint: "只有硬约束会让 CI 失败；参考项照样检查、照样显示，但不阻断") {
             VStack(spacing: 0) {
                 ForEach(Array(model.invariants.enumerated()), id: \.element.id) { index, inv in
                     if index > 0 { Divider() }

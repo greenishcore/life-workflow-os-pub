@@ -1,0 +1,47 @@
+name: archmap
+
+# 架构地图数据的重生成。
+#
+# 刻意**不**挂在每次 push 上：这个 job 要跑在 macos runner 上，
+# 而 GitHub 对 macOS 是 10 倍计费、本仓库又是私有的。
+# 架构不会每次提交都变，每周一次 + 需要时手动触发已经够用；
+# 想立刻看到改动效果，在应用「架构地图」页点「从源码重算」即可。
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'   # 每周一 03:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apple/LifeWorkflowKit
+    steps:
+      - uses: actions/checkout@v4
+
+      # 唯一的硬约束：核心包不得 import UI 框架。
+      # 这是编译器给不了的保护 —— SwiftUI 在 macOS 与 iOS 上都可用，
+      # 核心包 import 了照样编过，代价要等到加 watchOS 时才显现。
+      # 其余几条已降为参考项：两条构建系统本就保证，一条基于自己声明的分层模型。
+      - name: 架构约束校验（硬约束违例即失败）
+        run: swift run archmap-tool --repo ../.. --check
+
+      - name: 重新生成架构地图数据
+        run: swift run archmap-tool --repo ../..
+
+      - name: 有变化就提交
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          if git diff --quiet -- docs/02-architecture/archmap.json; then
+            echo "架构地图无变化"
+          else
+            git config user.name "archmap-bot"
+            git config user.email "bot@users.noreply.github.com"
+            git add docs/02-architecture/archmap.json
+            git commit -m "chore: 重新生成架构地图数据"
+            git push
+          fi

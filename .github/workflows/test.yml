@@ -12,9 +12,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   core:
     runs-on: ubuntu-latest
@@ -70,25 +67,3 @@ jobs:
         run: swift test
       - name: iOS 交叉编译
         run: xcodebuild -scheme LifeWorkflowKit -destination 'generic/platform=iOS' -quiet build
-
-      # 架构地图：把「依赖只能向下」「核心包不得 import UI 框架」这类
-      # 原本只写在文档里的约束，变成真正会拦住合并的门禁。
-      - name: 架构约束校验（违例即失败）
-        run: swift run archmap-tool --repo ../.. --check
-
-      - name: 重新生成架构地图数据
-        run: swift run archmap-tool --repo ../..
-
-      - name: 有变化就提交
-        working-directory: .
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          if git diff --quiet -- docs/02-architecture/archmap.json; then
-            echo "架构地图无变化"
-          else
-            git config user.name "archmap-bot"
-            git config user.email "bot@users.noreply.github.com"
-            git add docs/02-architecture/archmap.json
-            git commit -m "chore: 重新生成架构地图数据"
-            git push
-          fi
