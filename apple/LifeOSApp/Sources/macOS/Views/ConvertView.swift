@@ -168,6 +168,7 @@ struct ConvertView: View {
         busy = true
         result = nil
         log.append("──── \(source.lastPathComponent) ────")
+        let started = Date()
         defer { busy = false }
 
         let output = customOutput.trimmingCharacters(in: .whitespaces)
@@ -185,6 +186,15 @@ struct ConvertView: View {
             log.append("❌ \(outcome.message)")
             state.notify("转换失败")
         }
+        // 自动留痕：这条数据正是周复盘提炼 skill 的原料
+        await state.logOperation(
+            objective: "转换 \(source.lastPathComponent) → \(target.rawValue)",
+            status: outcome.ok ? .success : .failed,
+            tools: [ConvertService.markdownTool(), "pandoc"].compactMap { $0 },
+            outputs: outcome.output.map { [$0.path] } ?? [],
+            errors: outcome.ok ? [] : [outcome.message],
+            duration: Date().timeIntervalSince(started),
+            notes: outcome.cached ? "命中缓存" : "")
         refreshCache()
     }
 

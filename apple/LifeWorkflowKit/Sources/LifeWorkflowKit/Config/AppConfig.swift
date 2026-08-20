@@ -35,6 +35,7 @@ public struct AppConfig: Sendable, Codable, Hashable {
     public var logsPath: String
     public var promptsPath: String
     public var cachePath: String
+    public var skillsPath: String
     public var theme: String
     public var defaultCalendar: String
     public var defaultReminderList: String
@@ -46,6 +47,7 @@ public struct AppConfig: Sendable, Codable, Hashable {
         logsPath: String = "",
         promptsPath: String = "",
         cachePath: String = "",
+        skillsPath: String = "",
         theme: String = "system",
         defaultCalendar: String = "个人",
         defaultReminderList: String = "提醒事项",
@@ -56,6 +58,7 @@ public struct AppConfig: Sendable, Codable, Hashable {
         self.logsPath = logsPath
         self.promptsPath = promptsPath
         self.cachePath = cachePath
+        self.skillsPath = skillsPath
         self.theme = theme
         self.defaultCalendar = defaultCalendar
         self.defaultReminderList = defaultReminderList
@@ -70,6 +73,7 @@ public struct AppConfig: Sendable, Codable, Hashable {
     public var logsURL: URL { Self.expand(logsPath, fallback: "Logs") }
     public var promptsURL: URL { Self.expand(promptsPath, fallback: "Prompts") }
     public var cacheURL: URL { Self.expand(cachePath, fallback: "Cache") }
+    public var skillsURL: URL { Self.expand(skillsPath, fallback: "Skills") }
     public var runLogJSONL: URL { logsURL.appendingPathComponent("run-log.jsonl") }
     public var runLogMarkdown: URL { logsURL.appendingPathComponent("run-log.md") }
 
@@ -144,7 +148,7 @@ public struct AppConfig: Sendable, Codable, Hashable {
 
     public func ensureDirectories() throws {
         let fm = FileManager.default
-        for url in [logsURL, promptsURL, cacheURL] {
+        for url in [logsURL, promptsURL, cacheURL, skillsURL] {
             try fm.createDirectory(at: url, withIntermediateDirectories: true)
         }
         for root in vaultRoots {

@@ -19,8 +19,9 @@ public enum FrontmatterEmitter {
     ]
     /// 用内联数组书写的字段
     public static let inlineListFields: Set<String> = ["tags"]
+    /// 日期字段（skill 的 last_used 同样以裸日期输出）
     /// 以裸 `YYYY-MM-DD` 输出的字段（加引号反而与手写惯例不符）
-    public static let dateFields: Set<String> = ["created", "updated"]
+    public static let dateFields: Set<String> = ["created", "updated", "last_used"]
 
     private static let plainUnsafeStart = Set("-?:,[]{}#&*!|>'\"%@`")
     private static let yamlKeywords: Set<String> = [
@@ -30,12 +31,20 @@ public enum FrontmatterEmitter {
 
     // MARK: 对外
 
+    /// skill 的字段序（与想法不同：skills 用 skill_id / name）
+    public static let skillFieldOrder = [
+        "skill_id", "name", "status", "created", "updated", "tags",
+        "trigger", "uses", "last_used", "source_errors",
+    ]
+
     /// 渲染 frontmatter 文本块（不含 `---` 分隔线）。
-    public static func emit(_ mapping: YAMLMapping) -> String {
+    /// `order` 可指定字段序 —— 想法与 skill 用的是两套字段。
+    public static func emit(_ mapping: YAMLMapping, order: [String]? = nil) -> String {
+        let fields = order ?? fieldOrder
         var lines: [String] = []
         var seen = Set<String>()
 
-        for key in fieldOrder {
+        for key in fields {
             guard let value = mapping[key] else { continue }
             seen.insert(key)
             if case .null = value { continue }
@@ -55,7 +64,7 @@ public enum FrontmatterEmitter {
         }
 
         // 未知字段：保留下来（键名排序，对齐 Python 的 yaml.safe_dump(sort_keys=True)）
-        let extras = mapping.excluding(Set(fieldOrder))
+        let extras = mapping.excluding(Set(fields))
         if !extras.isEmpty {
             for key in extras.keys.sorted() {
                 guard let value = extras[key] else { continue }
@@ -66,8 +75,8 @@ public enum FrontmatterEmitter {
     }
 
     /// 渲染完整文件内容（frontmatter + 正文）。
-    public static func render(_ mapping: YAMLMapping, body: String) -> String {
-        let head = emit(mapping)
+    public static func render(_ mapping: YAMLMapping, body: String, order: [String]? = nil) -> String {
+        let head = emit(mapping, order: order)
         var trimmed = body
         while trimmed.hasPrefix("\n") { trimmed.removeFirst() }
         while let last = trimmed.last, last.isWhitespace { trimmed.removeLast() }

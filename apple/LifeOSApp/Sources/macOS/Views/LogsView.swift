@@ -37,6 +37,8 @@ struct LogsView: View {
         } content: {
             kpis
             charts
+            proposalsCard
+            skillsCard
             addCard
             tableCard
         }
@@ -165,6 +167,90 @@ struct LogsView: View {
         }
     }
 
+    // MARK: 技能演进（主线 4）
+
+    private var proposalsCard: some View {
+        Card(title: "本期可沉淀",
+             hint: "从运行日志算出来的：重复的坑该有对策，稳定的流程该被固化") {
+            if state.proposals.isEmpty {
+                Text(logs.isEmpty
+                     ? "还没有运行日志。用一次格式转换或版本归档，系统会自动留痕，这里就有料可算了。"
+                     : "本期没有值得沉淀的模式——错误没有重复，流程也没有稳定复现。")
+                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(state.proposals.enumerated()), id: \.element.id) { index, p in
+                        if index > 0 { Divider() }
+                        HStack(alignment: .top, spacing: 10) {
+                            Badge(text: p.kind.label,
+                                  color: p.kind.isActionable ? Theme.accent : .orange)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(p.title).font(.system(size: 13, weight: .semibold))
+                                Text(p.rationale).font(.system(size: 11))
+                                    .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                                ForEach(p.evidence, id: \.self) { e in
+                                    Text(e).font(.system(size: 10, design: .monospaced))
+                                        .foregroundStyle(Theme.faint)
+                                }
+                            }
+                            Spacer(minLength: 8)
+                            if p.kind.isActionable {
+                                Button("采纳") { Task { await state.adopt(p) } }
+                                    .buttonStyle(.borderedProminent)
+                                    .controlSize(.small)
+                            }
+                        }
+                        .padding(.vertical, 7)
+                    }
+                }
+            }
+        }
+    }
+
+    private var skillsCard: some View {
+        Card(title: "技能库", hint: "已验证的可复用操作；用过一次就点「记一次」，闲置太久会被提醒") {
+            if state.skills.isEmpty {
+                Text("技能库是空的。上面有可沉淀的提议时点「采纳」，或手动往 skills/ 里加。")
+                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(state.skills.enumerated()), id: \.element.id) { index, skill in
+                        if index > 0 { Divider() }
+                        HStack(spacing: 10) {
+                            Badge(text: skill.status.label, color: Color(hex: skill.status.colorHex))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(skill.name).font(.system(size: 13, weight: .semibold))
+                                if !skill.trigger.isEmpty {
+                                    Text(skill.trigger).font(.system(size: 11))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer(minLength: 8)
+                            Text(skill.uses == 0 ? "未用过" : "用过 \(skill.uses) 次")
+                                .font(.system(size: 11)).foregroundStyle(Theme.faint)
+                            if skill.isStale() {
+                                Image(systemName: "clock.badge.exclamationmark")
+                                    .foregroundStyle(.orange)
+                                    .help("长期没用过")
+                            }
+                            Button("记一次") { Task { await state.recordSkillUse(skill) } }
+                                .controlSize(.small)
+                            if let url = skill.url {
+                                Button {
+                                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                                } label: {
+                                    Image(systemName: "folder")
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        }
+                        .padding(.vertical, 6)
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: 动作
 
     private func load() async {
@@ -172,6 +258,7 @@ struct LogsView: View {
         let loaded = await state.runLog.load(since: since)
         logs = loaded
         stats = ReviewService.aggregate(loaded, since: since)
+        await state.refreshSkills(since: since)
     }
 
     private func addLog() async {

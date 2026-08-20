@@ -38,13 +38,21 @@ enum Snapshot {
             log("[snapshot] 任务开始")
             var override: AppConfig?
             if let vault = requestedVault {
-                override = AppConfig(roots: [
-                    .init(id: "local", path: vault.path, displayName: "本地")
-                ], logsPath: vault.deletingLastPathComponent().appendingPathComponent("logs").path)
+                // 快照时把 logs / skills 指到 vault 同级目录，
+                // 这样截出来的是仓库的真实状态，而不是空的 App 容器
+                let repo = vault.deletingLastPathComponent()
+                override = AppConfig(
+                    roots: [.init(id: "local", path: vault.path, displayName: "本地")],
+                    logsPath: repo.appendingPathComponent("logs").path,
+                    promptsPath: repo.appendingPathComponent("prompts").path,
+                    skillsPath: repo.appendingPathComponent("skills").path)
             }
             let state = AppState(config: override)
             await state.bootstrap()
-            log("[snapshot] 数据就绪，\(state.items.count) 条记录")
+            // ImageRenderer 不执行 .task，靠页面自己加载的数据必须在这里预热，
+            // 否则截出来的是空状态而不是真实状态
+            await state.refreshSkills(since: ReviewService.defaultSince(days: 30))
+            log("[snapshot] 数据就绪，\(state.items.count) 条记录，\(state.skills.count) 个 skill")
             do {
                 try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
                 for scheme in [ColorScheme.light, .dark] {

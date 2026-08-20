@@ -24,6 +24,10 @@ final class AppState {
     private(set) var conflictReports: [ConflictReport] = []
     private(set) var isResolvingConflicts = false
 
+    // 主线 4：技能库与本期可沉淀
+    private(set) var skills: [Skill] = []
+    private(set) var proposals: [SkillsService.Proposal] = []
+
     /// 需要用户介入的告警（冲突、跨根重名）
     var attentionWarnings: [VaultWarning] { warnings.filter(\.needsAttention) }
 
@@ -96,6 +100,79 @@ final class AppState {
         try? newConfig.ensureDirectories()
         _ = try? newConfig.save()
         await reload()
+    }
+
+    // MARK: 技能库（主线 4）
+
+    /// 加载技能库，并根据区间内的运行日志算出「本期可沉淀什么」
+    func refreshSkills(since: String) async {
+        skills = SkillsService.load(from: config.skillsURL)
+        let logs = await runLog.load(since: since)
+        proposals = SkillsService.propose(logs: logs, existing: skills)
+    }
+
+    /// 采纳一条提议：把草稿写进技能库
+    func adopt(_ proposal: SkillsService.Proposal) async {
+        guard let draft = proposal.draft else { return }
+        do {
+            let url = try SkillsService.save(draft, to: config.skillsURL)
+            notify("已沉淀为 skill → \(url.lastPathComponent)，去补全解法")
+            await logOperation(objective: "沉淀 skill：\(draft.name)",
+                               status: .success, tools: ["skills"], outputs: [url.path])
+            skills = SkillsService.load(from: config.skillsURL)
+            proposals.removeAll { $0.id == proposal.id }
+        } catch {
+            notify("沉淀失败：\(error.localizedDescription)")
+        }
+    }
+
+    /// 记一次 skill 使用（效果评分那一环的最小版本）
+    func recordSkillUse(_ skill: Skill) async {
+        var updated = skill
+        updated.recordUse()
+        do {
+            _ = try SkillsService.save(updated, to: config.skillsURL)
+            skills = SkillsService.load(from: config.skillsURL)
+            notify("「\(skill.name)」已记 \(updated.uses) 次使用")
+        } catch {
+            notify("记录失败：\(error.localizedDescription)")
+        }
+    }
+
+    // MARK: 运行留痕
+
+    /// 记录一次操作。
+    ///
+    /// 主线 4（信息流 → skills 演进）此前是空转的：run-log.jsonl 从没被写过，
+    /// 因为记录靠手动敲命令。应用自己的转换 / git 同步 / 提示词重写本来就是
+    /// 「agent 操作」，让它们自动留痕，这条链才有真实数据可聚合。
+    func logOperation(
+        objective: String,
+        status: RunLog.Status,
+        tools: [String] = [],
+        outputs: [String] = [],
+        errors: [String] = [],
+        duration: TimeInterval = 0,
+        notes: String = ""
+    ) async {
+        let log = RunLog(objective: objective, agent: "app",
+                         toolsUsed: tools, outputs: outputs, status: status,
+                         errors: errors, durationSeconds: duration, notes: notes)
+        _ = try? await runLog.append(log)
+    }
+
+    /// 计时执行并自动留痕
+    func tracked<T>(
+        _ objective: String, tools: [String] = [],
+        operation: () async -> (result: T, ok: Bool, outputs: [String], errors: [String])
+    ) async -> T {
+        let start = Date()
+        let outcome = await operation()
+        await logOperation(objective: objective,
+                           status: outcome.ok ? .success : .failed,
+                           tools: tools, outputs: outcome.outputs, errors: outcome.errors,
+                           duration: Date().timeIntervalSince(start))
+        return outcome.result
     }
 
     // MARK: iCloud 冲突

@@ -34,19 +34,19 @@ struct IdeaEntity: AppEntity, Identifiable {
 
 struct IdeaQuery: EntityStringQuery {
     func entities(for identifiers: [String]) async throws -> [IdeaEntity] {
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         let items = await store.allItems
         return items.filter { identifiers.contains($0.id) }.map(IdeaEntity.init)
     }
 
     func entities(matching string: String) async throws -> [IdeaEntity] {
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         return await store.query(text: string).map(IdeaEntity.init)
     }
 
     /// 快捷指令里点开列表时默认展示「最近有动静的」
     func suggestedEntities() async throws -> [IdeaEntity] {
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         let items = await store.allItems
         return items
             .sorted { $0.lastActivity > $1.lastActivity }

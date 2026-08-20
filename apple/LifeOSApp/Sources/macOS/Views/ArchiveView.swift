@@ -176,6 +176,10 @@ struct ArchiveView: View {
             log: { line in Task { @MainActor in log.append(line) } })
         log.append((outcome.ok ? "✅ " : "❌ ") + outcome.message)
         state.notify(outcome.message)
+        await state.logOperation(
+            objective: push ? "提交并推送" : "提交（不推送）",
+            status: outcome.ok ? .success : .failed,
+            tools: ["git"], errors: outcome.ok ? [] : [outcome.message])
         if outcome.ok { message = "" }
         await load()
     }
@@ -190,6 +194,10 @@ struct ArchiveView: View {
             log: { line in Task { @MainActor in log.append(line) } })
         log.append((outcome.ok ? "✅ " : "❌ ") + outcome.message)
         state.notify(outcome.message)
+        await state.logOperation(
+            objective: "发布里程碑 \(version)",
+            status: outcome.ok ? .success : .failed,
+            tools: ["git", "gh"], errors: outcome.ok ? [] : [outcome.message])
         if outcome.ok { version = ""; notes = "" }
         await load()
     }

@@ -114,6 +114,7 @@ struct PromptsView: View {
 
     private func generate(useLLM: Bool) async {
         busy = true
+        let started = Date()
         defer { busy = false }
         do {
             let doc = try await PromptService.rewrite(raw, useLLM: useLLM, config: state.config)
@@ -121,9 +122,19 @@ struct PromptsView: View {
             currentURL = doc.outputURL
             history = PromptService.list(config: state.config)
             state.notify("[\(doc.mode.label)] 已生成 → \(doc.outputURL.lastPathComponent)")
+            await state.logOperation(
+                objective: "重写提示词：\(String(raw.prefix(30)))",
+                status: .success, tools: [useLLM ? "llm" : "scaffold"],
+                outputs: [doc.outputURL.path],
+                duration: Date().timeIntervalSince(started))
         } catch {
             content = "生成失败：\n\(error.localizedDescription)"
             state.notify("生成失败")
+            await state.logOperation(
+                objective: "重写提示词：\(String(raw.prefix(30)))",
+                status: .failed, tools: [useLLM ? "llm" : "scaffold"],
+                errors: [error.localizedDescription],
+                duration: Date().timeIntervalSince(started))
         }
     }
 

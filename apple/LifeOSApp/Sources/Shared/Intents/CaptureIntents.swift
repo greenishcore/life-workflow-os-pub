@@ -26,7 +26,7 @@ struct CaptureIdeaIntent: AppIntent {
         guard !content.isEmpty else {
             throw AppIntentError.emptyText
         }
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         let url = try await store.capture(content)
         return .result(dialog: "已记到 \(url.lastPathComponent)")
     }
@@ -57,7 +57,7 @@ struct CreateIdeaIntent: AppIntent {
         guard var item = IdeaActions.makeIdea(from: name, firstNote: firstNote) else {
             throw AppIntentError.emptyText
         }
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         try await store.save(&item)
         return .result(value: IdeaEntity(item), dialog: "已创建想法「\(item.title)」")
     }
@@ -86,7 +86,7 @@ struct AddThinkingNoteIntent: AppIntent {
         let text = note.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { throw AppIntentError.emptyText }
 
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         guard var item = await store.item(id: idea.id) else {
             throw AppIntentError.ideaNotFound(idea.title)
         }
@@ -112,7 +112,7 @@ struct AdvanceIdeaIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         guard var item = await store.item(id: idea.id) else {
             throw AppIntentError.ideaNotFound(idea.title)
         }
@@ -139,7 +139,7 @@ struct TodayFocusIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ReturnsValue<[IdeaEntity]> & ProvidesDialog {
-        let store = await VaultResolver.makeStore()
+        let store = await IntentVault.makeStore()
         let focus = IdeaActions.todayFocus(await store.allItems, limit: limit)
 
         guard !focus.isEmpty else {
