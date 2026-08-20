@@ -219,7 +219,148 @@ public enum ArchExtractor {
             severity: .advisory,
             violations: untested))
 
+        // ---- 界面设计交接的三条护栏 ----
+        //
+        // 这三条守的是「界面设计可以交给别人改」这条边界。编译器一条也管不了：
+        // 写死字号编得过、视图里跑 git 也编得过，代价要等到交接之后才显现。
+        out.append(contentsOf: uiHandoffInvariants(scanned: scanned))
+
         return out
+    }
+
+    // MARK: 界面交接护栏
+
+    /// 视图与绘图组件所在的目录。AppState 在 Shared/ 里，它调服务是本职，不在管辖范围。
+    static func isDesignSurface(_ path: String) -> Bool {
+        guard path.hasPrefix("apple/LifeOSApp/Sources") else { return false }
+        return path.contains("/Views/") || path.contains("/Components/")
+    }
+
+    /// 设计令牌自身的定义处——它当然要写字面量，否则令牌从哪来。
+    static func isTokenDefinition(_ path: String) -> Bool {
+        path.hasSuffix("Sources/Shared/Theme.swift")
+    }
+
+    /// 已收录进 `Theme.Space` 的档位。用这些数字只是「还没换成令牌」，机械替换即可；
+    /// 其它数字要先决定归到哪一档，那是设计决策。
+    static let spacingScale: Set<Int> = [0, 2, 4, 8, 12, 16, 20]
+
+    static func uiHandoffInvariants(
+        scanned: [(file: SourceFile, code: String, moduleID: String?)]
+    ) -> [Invariant] {
+        var typography: [Violation] = []
+        var offScaleSpacing: [Violation] = []
+        var onScaleCount = 0
+        var services: [Violation] = []
+
+        for item in scanned where !isTokenDefinition(item.file.path) {
+            let inDesignSurface = isDesignSurface(item.file.path)
+            // code 已经剥掉注释与字符串字面量，行号仍与原文一一对应
+            for (index, line) in item.code.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+                let text = String(line)
+                let lineNo = index + 1
+
+                if inDesignSurface, text.contains(".system(size:") {
+                    typography.append(.init(
+                        file: item.file.path, line: lineNo,
+                        detail: "写死字号，应改用 Theme.Typo 的令牌"))
+                }
+
+                if inDesignSurface {
+                    for value in spacingLiterals(in: text) {
+                        if spacingScale.contains(value) {
+                            onScaleCount += 1
+                        } else {
+                            offScaleSpacing.append(.init(
+                                file: item.file.path, line: lineNo,
+                                detail: "间距 \(value)pt 不在 Theme.Space 的档位上"))
+                        }
+                    }
+                }
+
+                if inDesignSurface, let hit = serviceCall(in: text) {
+                    services.append(.init(
+                        file: item.file.path, line: lineNo,
+                        detail: "视图直接调用了 \(hit)，应经由 AppState"))
+                }
+            }
+        }
+
+        return [
+            Invariant(
+                id: "ui-typography-tokens",
+                title: "视图不得写死字号",
+                rationale: "排版要有单一事实源，接手方才可能只改一处就调完整套界面。"
+                    + "迁移前全仓 154 处写死字号、21 种组合，改「次要说明大一号」要翻 22 个文件。"
+                    + "编译器管不了这件事，只能靠门禁",
+                violations: typography),
+            Invariant(
+                id: "ui-spacing-tokens",
+                title: "间距应落在 Theme.Space 的档位上",
+                rationale: "这条是**给接手方的规范化清单**，不是门禁。列出的是不在档位上的取值"
+                    + "（1/3/5/7/9/11/18pt 这类）——把它们对齐到刻度会改变布局，"
+                    + "那是设计决策，不该由重构顺手决定。"
+                    + "另有 \(onScaleCount) 处虽是裸数字但已在档位上，属机械替换，未计入",
+                severity: .advisory,
+                violations: offScaleSpacing),
+            Invariant(
+                id: "ui-no-services",
+                title: "视图不得直接调用服务",
+                rationale: "界面设计要能独立交接，改排版就不该碰到跑 git、起子进程、写文件的代码。"
+                    + "判定只看「Service. 后面跟小写开头的成员」——那是方法或属性；"
+                    + "跟大写开头的是嵌套类型（如 ConvertService.Target），"
+                    + "选择器要用它来渲染选项，属于合理引用",
+                violations: services),
+        ]
+    }
+
+    /// 抓 `.padding(8)` / `.padding(.horizontal, 6)` / `spacing: 12` 里的裸数字
+    static func spacingLiterals(in line: String) -> [Int] {
+        var out: [Int] = []
+        for marker in [".padding(", "spacing:"] {
+            var search = line[...]
+            while let range = search.range(of: marker) {
+                let rest = search[range.upperBound...]
+                out.append(contentsOf: leadingNumbers(in: rest))
+                search = rest
+            }
+        }
+        return out
+    }
+
+    /// SwiftUI 的边指定符。`.padding(.horizontal, 6)` 里要先跳过它才够得着数字。
+    static let edgeSpecifiers: Set<String> = [
+        "horizontal", "vertical", "top", "bottom", "leading", "trailing", "all",
+    ]
+
+    /// 从 `8)` / `.horizontal, 6)` 这样的片段里取出那个裸数字。
+    /// 数字前面若是标识符（`Theme.pad`、某个变量），说明已经用了令牌，返回空。
+    static func leadingNumbers(in fragment: Substring) -> [Int] {
+        var rest = fragment.drop { $0 == " " }
+        if rest.first == "." {
+            let name = rest.dropFirst().prefix { $0.isLetter }
+            if edgeSpecifiers.contains(String(name)) {
+                rest = rest.dropFirst(1 + name.count).drop { $0 == "," || $0 == " " }
+            }
+        }
+        let digits = rest.prefix { $0.isNumber }
+        guard !digits.isEmpty, let n = Int(digits) else { return [] }
+        return [n]
+    }
+
+    /// 视图里对服务的**调用**。`Service.` 后跟小写 = 方法或属性；跟大写 = 嵌套类型，放行。
+    static func serviceCall(in line: String) -> String? {
+        if line.contains("EventKitBridge(") { return "EventKitBridge" }
+        var search = line[...]
+        while let range = search.range(of: "Service.") {
+            let head = search[..<range.lowerBound]
+            let name = String(head.reversed().prefix { $0.isLetter }.reversed()) + "Service"
+            if let next = search[range.upperBound...].first, next.isLowercase {
+                return name + "." + String(search[range.upperBound...].prefix { $0.isLetter || $0.isNumber })
+            }
+            search = search[range.upperBound...]
+        }
+        return nil
     }
 
     // MARK: 辅助

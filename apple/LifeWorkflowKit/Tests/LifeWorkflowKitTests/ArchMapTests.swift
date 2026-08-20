@@ -124,19 +124,85 @@ struct ArchExtractorTests {
         #expect(model.modules.allSatisfy { !$0.files.isEmpty }, "空模块不该进图")
     }
 
-    // 这条把「只保留一条硬门禁」这个决定固定下来。
-    // 另外三条降级是有理由的：两条编译器/构建系统已经保证（iOS 无 Process、
-    // macOS 与 iOS 是不同 target），一条基于本仓库自己声明的分层模型、误报过一次。
-    // 想再加硬门禁请连同理由一起改，别无声地改回去。
-    @Test("只有「核心包不得依赖 UI 框架」是硬约束")
-    func onlyOneBlockingInvariant() throws {
+    // 这条把「哪几条是硬门禁」这个决定固定下来。
+    //
+    // 判据始终是同一条：**编译器管得了的，不设门禁**。
+    // 降级的三条里两条编译器/构建系统已经保证（iOS 无 Process、macOS 与 iOS 是不同
+    // target），一条基于本仓库自己声明的分层模型、误报过一次。
+    //
+    // 后加的两条 ui-* 是硬门禁，因为编译器一条也管不了：写死字号编得过、
+    // 视图里跑 git 也编得过，代价要等到界面设计交接出去之后才显现。
+    // 间距那条是参考项，它的作用是给接手方列规范化清单，不是拦人。
+    //
+    // 想增删硬门禁请连同理由一起改，别无声地改回去。
+    @Test("硬门禁只有编译器管不了的那几条")
+    func blockingInvariantsAreDeliberate() throws {
         let model = try ArchExtractor.extract(repoRoot: Self.repo).model
-        let blocking = model.invariants.filter { $0.severity == .blocking }
-        #expect(blocking.map(\.id) == ["kit-no-ui"],
-                "硬约束应当只有 kit-no-ui，实际是 \(blocking.map(\.id))")
+        let blocking = Set(model.invariants.filter { $0.severity == .blocking }.map(\.id))
+        #expect(blocking == ["kit-no-ui", "ui-typography-tokens", "ui-no-services"],
+                "硬约束实际是 \(blocking.sorted())")
         let advisory = Set(model.invariants.filter { $0.severity == .advisory }.map(\.id))
-        #expect(advisory == ["downward-only", "ui-targets-isolated",
-                             "subprocess-macos-only", "kit-modules-tested"])
+        #expect(advisory == ["downward-only", "ui-targets-isolated", "subprocess-macos-only",
+                             "kit-modules-tested", "ui-spacing-tokens"])
+    }
+
+    // MARK: 界面交接护栏
+
+    @Test("视图里写死字号会被抓到，令牌定义处不会")
+    func typographyGuard() throws {
+        let view = SourceScanner.scan(
+            text: "Text(\"x\").font(.system(size: 11))",
+            path: "apple/LifeOSApp/Sources/macOS/Views/FakeView.swift")
+        let token = SourceScanner.scan(
+            text: "static let hint = Font.system(size: 11)",
+            path: "apple/LifeOSApp/Sources/Shared/Theme.swift")
+        let rule = try #require(ArchExtractor.uiHandoffInvariants(scanned: [
+            (view, "Text(x).font(.system(size: 11))", nil),
+            (token, "static let hint = Font.system(size: 11)", nil),
+        ]).first { $0.id == "ui-typography-tokens" })
+        #expect(rule.severity == .blocking)
+        #expect(rule.violations.count == 1, "只该抓视图那处，令牌定义要放行")
+        #expect(rule.violations.first?.file.contains("FakeView") == true)
+    }
+
+    @Test("Service 后跟小写是调用要拦，跟大写是嵌套类型要放行")
+    func serviceGuardDistinguishesTypesFromCalls() throws {
+        let path = "apple/LifeOSApp/Sources/macOS/Views/FakeView.swift"
+        let file = SourceScanner.scan(text: "x", path: path)
+        let rule = try #require(ArchExtractor.uiHandoffInvariants(scanned: [
+            (file, "let t: ConvertService.Target = .pdf", nil),          // 类型，放行
+            (file, "await GitService.status(repo: url)", nil),           // 调用，拦
+            (file, "if PromptService.llmAvailable {", nil),              // 属性，拦
+            (file, "let b = EventKitBridge()", nil),                     // 实例化，拦
+        ]).first { $0.id == "ui-no-services" })
+        #expect(rule.severity == .blocking)
+        #expect(rule.violations.count == 3, "实际：\(rule.violations.map(\.detail))")
+        #expect(rule.violations.allSatisfy { !$0.detail.contains("Target") })
+    }
+
+    @Test("间距只报不在档位上的，且是参考项不阻断")
+    func spacingGuardOnlyReportsOffScale() throws {
+        let path = "apple/LifeOSApp/Sources/macOS/Views/FakeView.swift"
+        let file = SourceScanner.scan(text: "x", path: path)
+        let rule = try #require(ArchExtractor.uiHandoffInvariants(scanned: [
+            (file, ".padding(8)", nil),                 // 在档位上，不报
+            (file, ".padding(.horizontal, 7)", nil),    // 不在档位上，报
+            (file, "VStack(spacing: 3) {", nil),        // 不在档位上，报
+            (file, ".padding(Theme.pad)", nil),         // 用了令牌，不报
+        ]).first { $0.id == "ui-spacing-tokens" })
+        #expect(rule.severity == .advisory, "这条是清单不是门禁")
+        #expect(rule.violations.count == 2, "实际：\(rule.violations.map(\.detail))")
+    }
+
+    @Test("护栏只管视图与绘图组件，AppState 调服务是本职")
+    func guardsScopedToDesignSurface() throws {
+        let appState = SourceScanner.scan(
+            text: "x", path: "apple/LifeOSApp/Sources/Shared/AppState.swift")
+        let rules = ArchExtractor.uiHandoffInvariants(scanned: [
+            (appState, "await GitService.status(repo: url)\n.font(.system(size: 11))", nil),
+        ])
+        #expect(rules.allSatisfy { $0.violations.isEmpty },
+                "AppState 不该被这三条管到")
     }
 
     @Test("降级的约束仍然在算、仍然会显示，只是不阻断")
