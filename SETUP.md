@@ -22,6 +22,54 @@ ln -sfn "$PWD/dist/Life Workflow OS.app" /Applications/   # 可选：放进启�
 > `.app` 是启动器型包：代码与数据仍在本仓库，`git pull` 后立即是新版本。
 > 若把仓库挪了位置，重新跑一次 `tools/build_app.sh` 即可。
 
+## 1.5 三端怎么用
+
+一共四个入口，能力不同：
+
+| 入口 | 怎么开 | 说明 |
+|---|---|---|
+| **命令行** | `./bin/lifeos <子命令>` | 捕获 / 转换 / 看板 / 提示词 / 复盘 / git 归档 |
+| **Mac · PyQt 版** | `bash tools/build_app.sh` 后双击 `dist/Life Workflow OS.app` | 9 个页面，功能最全 |
+| **Mac · Swift 原生版** | 见下 | 与 iOS / watchOS 同一套代码，多一个「架构地图」页 |
+| **iPhone / Apple Watch** | `bash tools/try-sim.sh iphone` / `watch` | **只能跑模拟器**，原因见下 |
+
+构建 Swift 原生 Mac 版：
+
+```bash
+cd apple/LifeOSApp && xcodegen generate
+xcodebuild -project LifeOS.xcodeproj -scheme LifeOS-macOS -configuration Release \
+  -derivedDataPath /tmp/lifeos-rel -quiet build
+cp -R /tmp/lifeos-rel/Build/Products/Release/*.app ../../dist/LifeOS.app
+open ../../dist/LifeOS.app
+```
+
+本地构建不带隔离标记，双击即可，不会被 Gatekeeper 拦。
+
+### 模拟器里的 iPhone / Watch
+
+```bash
+bash tools/try-sim.sh iphone          # 用你自己的 vault
+bash tools/try-sim.sh watch --demo    # 或用仓库自带的示例数据
+```
+
+脚本会开模拟器、构建安装、把 vault 复制进 App 容器、启动应用。
+**这是单向复制**：模拟器里改的内容不会回到你的 iCloud——模拟器读不到宿主机的
+iCloud Drive，这是模拟器的限制，不是应用的。
+
+### 装到真机
+
+需要一个**代码签名身份**，`security find-identity -p codesigning -v` 若返回
+`0 valid identities found` 就还不能装。用免费 Apple ID 就够：
+
+1. Xcode → Settings → Accounts → `+` → 加你的 Apple ID（免费账号即可）
+2. 打开 `apple/LifeOSApp/LifeOS.xcodeproj`，选中 target → Signing & Capabilities
+3. 勾上 Automatically manage signing，Team 选你的 Personal Team
+4. 选真机 → Run
+
+注意免费账号的两个限制：**描述文件 7 天过期**（到期要重新 Run 一次），
+以及 iCloud 容器、App Groups、CloudKit、Widget 这些权益都拿不到——
+手表端的数据同步因此还没实现，界面能看，数据要靠 iPhone 侧手动放。
+
 ## 2. 可选依赖（缺了只影响对应功能）
 
 应用内「设置 → 依赖体检」随时能看到装了哪些、还缺哪些。
