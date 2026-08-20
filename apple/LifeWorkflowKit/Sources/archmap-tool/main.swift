@@ -5,17 +5,23 @@ import LifeWorkflowKit
 ///
 /// 用法：
 ///   archmap-tool --repo <仓库根> [--out docs/02-architecture/archmap.json] [--check]
+///   archmap-tool --bench [--repo <仓库根>]      跑热路径基准并追加到 logs/bench.jsonl
 ///
 /// `--check` 只校验不写文件。任一硬约束被违反即以非零退出码结束，
 /// 这正是把「文档里的散文」变成「CI 门禁」的那一步。
 struct Tool {
-    static func main() {
+    static func main() async {
         let args = CommandLine.arguments
         func value(_ flag: String) -> String? {
             guard let i = args.firstIndex(of: flag), i + 1 < args.count else { return nil }
             return args[i + 1]
         }
         let checkOnly = args.contains("--check")
+        if args.contains("--bench") {
+            await runBenchmarks(repo: URL(fileURLWithPath:
+                value("--repo") ?? FileManager.default.currentDirectoryPath).standardizedFileURL)
+            return
+        }
         let repo = URL(fileURLWithPath: value("--repo") ?? FileManager.default.currentDirectoryPath)
             .standardizedFileURL
 
@@ -70,10 +76,35 @@ struct Tool {
         print("\n✅ 硬约束全部通过")
     }
 
+    /// 跑基准并追加时间序列。结果不入 archmap.json —— 那份要求确定性，基准每次都不同。
+    static func runBenchmarks(repo: URL) async {
+        let results = await Benchmarks.runAll()
+        print("热路径基准：")
+        for r in results {
+            let mark = r.overBudget ? "⚠️" : "✅"
+            print(String(format: "  %@ %-18@ %8.3f %@（预算 %.2f，%.0f%%）",
+                         mark, r.name as NSString, r.value, r.unit as NSString,
+                         r.budget, r.ratio * 100))
+            if !r.detail.isEmpty { print("       \(r.detail)") }
+        }
+
+        var config = AppConfig.load()
+        config.logsPath = repo.appendingPathComponent("logs").path
+        do {
+            let url = try Benchmarks.append(.init(results: results), config: config)
+            print("\n已追加 → \(url.path)")
+        } catch {
+            fail("写入失败：\(error.localizedDescription)")
+        }
+        if results.contains(where: \.overBudget) {
+            FileHandle.standardError.write(Data("\n⚠️ 有指标超出预算\n".utf8))
+        }
+    }
+
     static func fail(_ message: String) -> Never {
         FileHandle.standardError.write(Data("❌ \(message)\n".utf8))
         exit(2)
     }
 }
 
-Tool.main()
+await Tool.main()

@@ -33,6 +33,12 @@ jobs:
       - name: 重新生成架构地图数据
         run: swift run archmap-tool --repo ../..
 
+      # 刻意**不**在 CI 跑热路径基准（archmap-tool --bench）：
+      # GitHub 的共享 runner 性能波动很大，数字与本机不可比，
+      # 混进 logs/bench.jsonl 只会让趋势变噪音。
+      # 基准是本地按需跑的事 —— 应用「架构地图」页有「跑一次基准」按钮。
+      # 记录里带 configuration 与 host，就算误跑了也会被读取时的过滤挡掉。
+
       - name: 有变化就提交
         run: |
           cd "$GITHUB_WORKSPACE"

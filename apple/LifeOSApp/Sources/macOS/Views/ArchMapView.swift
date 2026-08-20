@@ -32,6 +32,9 @@ struct ArchMapView: View {
             } else if let model {
                 kpis(model)
                 invariantsCard(model)
+                benchmarkCard
+                robustnessCard(model)
+                runtimeCard
                 graphCard(model)
                 flowCard(model)
                 riskCard
@@ -48,7 +51,10 @@ struct ArchMapView: View {
                 }
             }
         }
-        .task { if state.archModel == nil { await state.loadArchMap() } }
+        .task {
+            if state.archModel == nil { await state.loadArchMap() }
+            await state.loadPerformance()
+        }
     }
 
     private var subtitle: String {
@@ -98,7 +104,8 @@ struct ArchMapView: View {
                                 Badge(text: inv.severity.label,
                                       color: inv.severity == .blocking ? .red : .orange)
                             }
-                            Text(inv.rationale).font(.system(size: 11))
+                            // 理由里带 **加粗**，用 Markdown 渲染，否则星号会原样显示
+                            Text(.init(inv.rationale)).font(.system(size: 11))
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                             ForEach(Array(inv.violations.enumerated()), id: \.offset) { _, v in
@@ -144,6 +151,139 @@ struct ArchMapView: View {
              hint: "捕捉 → 整理 → 执行 → 复盘 → 归档，以及每一环读写哪些数据产物") {
             FlowDiagram(model: model)
         }
+    }
+
+    // MARK: 效率与稳健性
+
+    private var benchmarkCard: some View {
+        Card(title: "热路径基准",
+             hint: "预算按实测基线定；结果记入 logs/bench.jsonl，Debug 与 Release 分开算趋势") {
+            if state.benchmarks.isEmpty {
+                HStack {
+                    Text("还没跑过基准。点右边跑一次，约 1 秒。")
+                        .font(.system(size: 12)).foregroundStyle(Theme.faint)
+                    Spacer()
+                    runBenchButton
+                }
+            } else {
+                ForEach(state.benchmarks) { result in
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: 8) {
+                            Image(systemName: result.overBudget
+                                  ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                                .foregroundStyle(result.overBudget ? .orange : .green)
+                            Text(result.name).font(.system(size: 12, weight: .semibold))
+                            Badge(text: stageName(result.stage), color: Theme.accent)
+                            Spacer()
+                            Text(String(format: "%.3f %@", result.value, result.unit))
+                                .font(.system(size: 12, design: .monospaced))
+                            Text(String(format: "预算 %.2f", result.budget))
+                                .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                        }
+                        // 预算占比条
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 2).fill(Theme.border)
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(result.overBudget ? Color.orange : Theme.accent)
+                                    .frame(width: geo.size.width * min(1, result.ratio))
+                            }
+                        }
+                        .frame(height: 4)
+                        Text(result.detail).font(.system(size: 10)).foregroundStyle(Theme.faint)
+                    }
+                    .padding(.vertical, 5)
+                    Divider()
+                }
+                HStack {
+                    if let last = state.benchHistory.first {
+                        Text("上次：\(last.timestamp.prefix(16).replacingOccurrences(of: "T", with: " ")) · \(last.configuration) 构建 · 共 \(state.benchHistory.count) 次记录")
+                            .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                    }
+                    Spacer()
+                    runBenchButton
+                }
+            }
+        }
+    }
+
+    private var runBenchButton: some View {
+        HStack(spacing: 6) {
+            if state.isBenchmarking { ProgressView().controlSize(.small) }
+            Button("跑一次基准") { Task { await state.runBenchmarks() } }
+                .disabled(state.isBenchmarking)
+        }
+    }
+
+    private func robustnessCard(_ model: ArchModel) -> some View {
+        let ranked = model.modules
+            .filter { $0.robustness.silencedErrors > 0 || $0.robustness.crashRisks > 0 }
+            .sorted { $0.silencedPer100Lines > $1.silencedPer100Lines }
+        return Card(title: "稳健性热点",
+                    hint: "try? 不一定是坏事——目录已存在就忽略是合理的；它是「错误在哪被静默吞掉」的信号，值得看一眼") {
+            if ranked.isEmpty {
+                Text("没有静默吞错，也没有崩溃风险写法。")
+                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+            } else {
+                ForEach(ranked) { module in
+                    HStack(spacing: 10) {
+                        Text(module.name).font(.system(size: 12, weight: .semibold))
+                            .frame(width: 90, alignment: .leading)
+                        Text("\(module.lineCount) 行").font(.system(size: 10))
+                            .foregroundStyle(Theme.faint).frame(width: 56, alignment: .trailing)
+                        Text("try? \(module.robustness.silencedErrors)")
+                            .font(.system(size: 11, design: .monospaced))
+                            .frame(width: 62, alignment: .leading)
+                        Text(String(format: "%.1f/百行", module.silencedPer100Lines))
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(module.silencedPer100Lines >= 2 ? .orange : .secondary)
+                            .frame(width: 76, alignment: .leading)
+                        if module.robustness.crashRisks > 0 {
+                            Badge(text: "崩溃风险 \(module.robustness.crashRisks)", color: .red)
+                        }
+                        Spacer()
+                        Text("throws \(module.robustness.throwingFunctions) · catch \(module.robustness.catchBlocks)")
+                            .font(.system(size: 10)).foregroundStyle(Theme.faint)
+                    }
+                    .padding(.vertical, 3)
+                }
+            }
+        }
+    }
+
+    private var runtimeCard: some View {
+        Card(title: "运行时表现",
+             hint: "来自 logs/run-log.jsonl 的真实操作，近 30 天；样本少时分位数意义有限") {
+            if state.runtimeOps.isEmpty {
+                Text("近 30 天还没有运行日志。做一次格式转换或版本归档，系统会自动留痕。")
+                    .font(.system(size: 12)).foregroundStyle(Theme.faint)
+            } else {
+                ForEach(state.runtimeOps) { op in
+                    HStack(spacing: 10) {
+                        Text(op.kind).font(.system(size: 12, weight: .semibold))
+                            .frame(width: 100, alignment: .leading)
+                        Text("\(op.count) 次").font(.system(size: 11))
+                            .foregroundStyle(Theme.faint).frame(width: 50, alignment: .leading)
+                        Text(String(format: "成功 %.0f%%", op.successRate * 100))
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(op.successRate < 1 ? .orange : .secondary)
+                            .frame(width: 76, alignment: .leading)
+                        Text(String(format: "P50 %.0fms · P95 %.0fms", op.p50, op.p95))
+                            .font(.system(size: 11, design: .monospaced))
+                        if let hit = op.cacheHitRate {
+                            Badge(text: String(format: "缓存命中 %.0f%%", hit * 100),
+                                  color: hit >= 0.5 ? .green : .orange)
+                        }
+                        Spacer()
+                    }
+                    .padding(.vertical, 3)
+                }
+            }
+        }
+    }
+
+    private func stageName(_ id: String) -> String {
+        model?.stages.first { $0.id == id }?.name ?? id
     }
 
     // MARK: 决策支持

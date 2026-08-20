@@ -35,6 +35,12 @@ final class AppState {
     private(set) var archError: String?
     private(set) var isLoadingArch = false
 
+    // 效率与稳健性
+    private(set) var benchmarks: [Benchmarks.Result] = []
+    private(set) var benchHistory: [Benchmarks.Record] = []
+    private(set) var runtimeOps: [RuntimeStats.Operation] = []
+    private(set) var isBenchmarking = false
+
     /// 需要用户介入的告警（冲突、跨根重名）
     var attentionWarnings: [VaultWarning] { warnings.filter(\.needsAttention) }
 
@@ -153,6 +159,37 @@ final class AppState {
         archRisks = ArchMetrics.risks(model: model, churn: churn,
                                       testedModuleIDs: ArchMetrics.testedModuleIDs(model: model))
         #endif
+    }
+
+    // MARK: 效率与稳健性
+
+    /// 读上次的基准结果与运行时指标。
+    ///
+    /// 基准不自动跑——它要造 200 条临时笔记，跑一次几百毫秒，
+    /// 每次打开页面都跑既没必要也会拖慢体验。
+    func loadPerformance() async {
+        benchHistory = Benchmarks.history(config: config)
+        benchmarks = benchHistory.first?.results ?? []
+        let logs = await runLog.load(since: ReviewService.defaultSince(days: 30))
+        runtimeOps = RuntimeStats.byOperation(logs)
+    }
+
+    /// 手动跑一次基准并记入时间序列
+    func runBenchmarks() async {
+        isBenchmarking = true
+        defer { isBenchmarking = false }
+        let results = await Benchmarks.runAll()
+        benchmarks = results
+        do {
+            _ = try Benchmarks.append(.init(results: results), config: config)
+            benchHistory = Benchmarks.history(config: config)
+            let over = results.filter(\.overBudget)
+            notify(over.isEmpty
+                   ? "基准已跑完并记入 logs/bench.jsonl"
+                   : "\(over.count) 项超出预算：\(over.map(\.name).joined(separator: "、"))")
+        } catch {
+            notify("基准结果写入失败：\(error.localizedDescription)")
+        }
     }
 
     // MARK: 技能库（主线 4）

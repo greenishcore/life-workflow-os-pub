@@ -98,6 +98,13 @@ public struct Module: Codable, Sendable, Equatable, Identifiable {
 
     public var lineCount: Int { files.reduce(0) { $0 + $1.lines } }
     public var fileCount: Int { files.count }
+    public var robustness: Robustness {
+        files.reduce(Robustness()) { $0 + $1.robustness }
+    }
+    /// 每百行的静默吞错数 —— 比绝对值更能横向比较模块
+    public var silencedPer100Lines: Double {
+        lineCount == 0 ? 0 : Double(robustness.silencedErrors) * 100 / Double(lineCount)
+    }
     /// 只在某个平台编译的模块
     public var platforms: [String] {
         Array(Set(files.flatMap(\.platformGates))).sorted()
@@ -124,6 +131,47 @@ public struct Module: Codable, Sendable, Equatable, Identifiable {
     }
 }
 
+/// 稳健性信号。
+///
+/// 这些是**信号不是判决**：`try?` 在「目录已存在就忽略」这类场景是合理的。
+/// 它的价值在于告诉你「错误在哪些地方被静默吞掉了」，值得人去看一眼。
+public struct Robustness: Codable, Sendable, Equatable {
+    /// try? —— 错误被静默丢弃
+    public var silencedErrors: Int
+    /// try! —— 出错直接崩
+    public var forcedTries: Int
+    /// 强制解包 x!
+    public var forceUnwraps: Int
+    /// fatalError / preconditionFailure
+    public var fatalSites: Int
+    /// throws 函数数（把错误往上抛，是好事）
+    public var throwingFunctions: Int
+    /// catch 块数（真正处理了错误）
+    public var catchBlocks: Int
+
+    public init(silencedErrors: Int = 0, forcedTries: Int = 0, forceUnwraps: Int = 0,
+                fatalSites: Int = 0, throwingFunctions: Int = 0, catchBlocks: Int = 0) {
+        self.silencedErrors = silencedErrors
+        self.forcedTries = forcedTries
+        self.forceUnwraps = forceUnwraps
+        self.fatalSites = fatalSites
+        self.throwingFunctions = throwingFunctions
+        self.catchBlocks = catchBlocks
+    }
+
+    public static func + (a: Robustness, b: Robustness) -> Robustness {
+        Robustness(silencedErrors: a.silencedErrors + b.silencedErrors,
+                   forcedTries: a.forcedTries + b.forcedTries,
+                   forceUnwraps: a.forceUnwraps + b.forceUnwraps,
+                   fatalSites: a.fatalSites + b.fatalSites,
+                   throwingFunctions: a.throwingFunctions + b.throwingFunctions,
+                   catchBlocks: a.catchBlocks + b.catchBlocks)
+    }
+
+    /// 会直接导致崩溃的写法总数 —— 这几个比 try? 严重得多
+    public var crashRisks: Int { forcedTries + forceUnwraps + fatalSites }
+}
+
 public struct SourceFile: Codable, Sendable, Equatable, Identifiable {
     public var path: String
     public var lines: Int
@@ -133,13 +181,15 @@ public struct SourceFile: Codable, Sendable, Equatable, Identifiable {
     public var publicTypes: [String]
     /// 引用到的、被约束关注的符号及其是否位于条件编译区内
     public var guardedSymbols: [GuardedSymbol]
+    public var robustness: Robustness
 
     public var id: String { path }
 
     public init(
         path: String, lines: Int, imports: [String] = [],
         platformGates: [String] = [], publicTypes: [String] = [],
-        guardedSymbols: [GuardedSymbol] = []
+        guardedSymbols: [GuardedSymbol] = [],
+        robustness: Robustness = Robustness()
     ) {
         self.path = path
         self.lines = lines
@@ -147,6 +197,7 @@ public struct SourceFile: Codable, Sendable, Equatable, Identifiable {
         self.platformGates = platformGates
         self.publicTypes = publicTypes
         self.guardedSymbols = guardedSymbols
+        self.robustness = robustness
     }
 }
 

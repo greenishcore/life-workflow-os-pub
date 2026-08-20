@@ -29,6 +29,7 @@ public enum SourceScanner {
         var gateStack: [String] = []
         var inBlockComment = false
         var code = 0
+        var robustness = Robustness()
         // 花括号深度：只有深度 0 的 public 类型才算这个模块「拥有」的类型。
         // 嵌套类型（RunLog.Status / ArchExtractor.Result）名字太通用，
         // 登记进去会和标准库或别的模块撞名，凭空造出依赖边。
@@ -83,6 +84,9 @@ public enum SourceScanner {
                     insideGate: gateStack.isEmpty ? nil : gateStack.joined(separator: " && ")))
             }
 
+            // ---- 稳健性信号（同样基于剥掉注释与字符串的代码）----
+            countRobustness(in: codeOnly, into: &robustness)
+
             braceDepth += line.filter { $0 == "{" }.count - line.filter { $0 == "}" }.count
             braceDepth = max(0, braceDepth)
         }
@@ -92,7 +96,8 @@ public enum SourceScanner {
             imports: Array(Set(imports)).sorted(),
             platformGates: Array(Set(gates)).sorted(),
             publicTypes: Array(Set(publicTypes)).sorted(),
-            guardedSymbols: guarded)
+            guardedSymbols: guarded,
+            robustness: robustness)
     }
 
     // MARK: 解析细节
@@ -123,6 +128,51 @@ public enum SourceScanner {
             i += 1
         }
         return (out, inBlock)
+    }
+
+    /// 统计一行里的稳健性信号。
+    ///
+    /// 注意顺序：`try!` 与 `try?` 都以 `try` 开头，必须先判 `try!` 再判 `try?`，
+    /// 否则会漏计。强制解包要排除 `!=` 与前缀否定 `!foo`，只数后缀形式。
+    static func countRobustness(in code: String, into r: inout Robustness) {
+        r.forcedTries += occurrences(of: "try!", in: code)
+        r.silencedErrors += occurrences(of: "try?", in: code)
+        r.fatalSites += occurrences(of: "fatalError(", in: code)
+            + occurrences(of: "preconditionFailure(", in: code)
+        if code.contains("throws") { r.throwingFunctions += occurrences(of: "throws", in: code) }
+        if code.contains("catch") { r.catchBlocks += occurrences(of: "catch", in: code) }
+        r.forceUnwraps += forceUnwrapCount(in: code)
+    }
+
+    static func occurrences(of needle: String, in text: String) -> Int {
+        guard !needle.isEmpty else { return 0 }
+        var count = 0
+        var range = text.startIndex..<text.endIndex
+        while let found = text.range(of: needle, range: range) {
+            count += 1
+            guard found.upperBound < text.endIndex else { break }
+            range = found.upperBound..<text.endIndex
+        }
+        return count
+    }
+
+    /// 只数后缀强制解包（`foo!.bar` / `foo!`）。
+    ///
+    /// 要排除三种：`!=`、前缀否定 `!flag`、以及 **`try!` 里的那个 `!`**——
+    /// 后者已经被 forcedTries 统计过，再算一次就是重复计数。
+    static func forceUnwrapCount(in code: String) -> Int {
+        let chars = Array(code)
+        var count = 0
+        for (i, c) in chars.enumerated() where c == "!" {
+            guard i > 0 else { continue }
+            let prev = chars[i - 1]
+            let isSuffix = prev.isLetter || prev.isNumber || prev == "_" || prev == ")" || prev == "]"
+            guard isSuffix else { continue }
+            if i + 1 < chars.count, chars[i + 1] == "=" { continue }        // !=
+            if i >= 3, String(chars[(i - 3)..<i]) == "try" { continue }     // try!
+            count += 1
+        }
+        return count
     }
 
     /// 把 "..." 里的内容抹掉，只留代码。

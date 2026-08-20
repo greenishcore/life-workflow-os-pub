@@ -108,6 +108,7 @@
         "app.intents",
         "app.ios",
         "app.shared",
+        "kit.perf",
         "kit.store"
       ],
       "declaredBy" : [
@@ -121,6 +122,7 @@
       "path" : "vault/**.md",
       "producers" : [
         "app.shared",
+        "kit.perf",
         "kit.store"
       ],
       "summary" : "想法 / 日记 / 项目，唯一事实源"
@@ -267,6 +269,13 @@
     },
     {
       "from" : "app.shared",
+      "to" : "kit.perf",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
       "to" : "kit.services",
       "viaFiles" : [
         "apple/LifeOSApp/Sources/Shared/AppState.swift"
@@ -306,6 +315,35 @@
       "viaFiles" : [
         "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Item.swift",
         "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Skill.swift"
+      ]
+    },
+    {
+      "from" : "kit.perf",
+      "to" : "kit.config",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/Benchmarks.swift"
+      ]
+    },
+    {
+      "from" : "kit.perf",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/Benchmarks.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/RuntimeStats.swift"
+      ]
+    },
+    {
+      "from" : "kit.perf",
+      "to" : "kit.stats",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/Benchmarks.swift"
+      ]
+    },
+    {
+      "from" : "kit.perf",
+      "to" : "kit.store",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/Benchmarks.swift"
       ]
     },
     {
@@ -363,6 +401,20 @@
     {
       "from" : "kit.tool",
       "to" : "kit.archmap",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/archmap-tool/main.swift"
+      ]
+    },
+    {
+      "from" : "kit.tool",
+      "to" : "kit.config",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/archmap-tool/main.swift"
+      ]
+    },
+    {
+      "from" : "kit.tool",
+      "to" : "kit.perf",
       "viaFiles" : [
         "apple/LifeWorkflowKit/Sources/archmap-tool/main.swift"
       ]
@@ -453,7 +505,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 5
+          }
         },
         {
           "guardedSymbols" : [
@@ -470,7 +530,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 3
+          }
         },
         {
           "guardedSymbols" : [
@@ -487,7 +555,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -503,7 +579,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "app.intents",
@@ -532,7 +616,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -549,7 +641,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 1,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -566,7 +666,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -584,7 +692,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -601,7 +717,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 1,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -618,7 +742,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -636,7 +768,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -653,7 +793,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "app.ios",
@@ -682,7 +830,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -693,14 +849,22 @@
             "LifeWorkflowKit",
             "SwiftUI"
           ],
-          "lines" : 131,
+          "lines" : 132,
           "path" : "apple/LifeOSApp/Sources/macOS/App/Snapshot.swift",
           "platformGates" : [
 
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 1
+          }
         },
         {
           "guardedSymbols" : [
@@ -717,7 +881,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -734,12 +906,20 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
             {
-              "line" : 227,
+              "line" : 367,
               "symbol" : "NSWorkspace"
             }
           ],
@@ -747,14 +927,22 @@
             "LifeWorkflowKit",
             "SwiftUI"
           ],
-          "lines" : 229,
+          "lines" : 360,
           "path" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
           "platformGates" : [
 
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -771,7 +959,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -788,7 +984,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -817,7 +1021,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -835,7 +1047,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -855,7 +1075,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -876,7 +1104,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 2,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -896,7 +1132,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 2,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 1,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -913,7 +1157,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -941,7 +1193,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "app.macos",
@@ -965,14 +1225,22 @@
             "Observation",
             "SwiftUI"
           ],
-          "lines" : 254,
+          "lines" : 280,
           "path" : "apple/LifeOSApp/Sources/Shared/AppState.swift",
           "platformGates" : [
             "macOS"
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 8,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 10,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -988,7 +1256,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1005,7 +1281,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1024,7 +1308,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "app.shared",
@@ -1052,7 +1344,15 @@
           ],
           "publicTypes" : [
             "ArchExtractor"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 1,
+            "throwingFunctions" : 1
+          }
         },
         {
           "guardedSymbols" : [
@@ -1068,7 +1368,15 @@
           ],
           "publicTypes" : [
             "ArchMetrics"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1077,7 +1385,7 @@
           "imports" : [
             "Foundation"
           ],
-          "lines" : 231,
+          "lines" : 266,
           "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/ArchModel.swift",
           "platformGates" : [
 
@@ -1090,10 +1398,19 @@
             "Invariant",
             "Layer",
             "Module",
+            "Robustness",
             "SourceFile",
             "Stage",
             "Violation"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 7,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 2
+          }
         },
         {
           "guardedSymbols" : [
@@ -1102,14 +1419,22 @@
           "imports" : [
             "Foundation"
           ],
-          "lines" : 79,
+          "lines" : 80,
           "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/LayerRules.swift",
           "platformGates" : [
 
           ],
           "publicTypes" : [
             "LayerRules"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1118,14 +1443,22 @@
           "imports" : [
             "Foundation"
           ],
-          "lines" : 155,
+          "lines" : 192,
           "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/SourceScanner.swift",
           "platformGates" : [
 
           ],
           "publicTypes" : [
             "SourceScanner"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "kit.archmap",
@@ -1143,6 +1476,7 @@
         "Layer",
         "LayerRules",
         "Module",
+        "Robustness",
         "SourceFile",
         "SourceScanner",
         "Stage",
@@ -1166,7 +1500,15 @@
           ],
           "publicTypes" : [
             "AppConfig"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 3,
+            "throwingFunctions" : 2
+          }
         }
       ],
       "id" : "kit.config",
@@ -1194,7 +1536,15 @@
           ],
           "publicTypes" : [
             "FrontmatterEmitter"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1210,7 +1560,15 @@
           ],
           "publicTypes" : [
             "FrontmatterParser"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1226,7 +1584,15 @@
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1243,7 +1609,15 @@
           "publicTypes" : [
             "YAMLMapping",
             "YAMLValue"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "kit.frontmatter",
@@ -1274,7 +1648,15 @@
           ],
           "publicTypes" : [
             "DateOnly"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 1,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1292,7 +1674,15 @@
             "ItemType",
             "Priority",
             "Status"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1308,7 +1698,15 @@
           ],
           "publicTypes" : [
             "Item"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1324,7 +1722,15 @@
           ],
           "publicTypes" : [
             "RunLog"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 2
+          }
         },
         {
           "guardedSymbols" : [
@@ -1340,7 +1746,15 @@
           ],
           "publicTypes" : [
             "Skill"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1356,7 +1770,15 @@
           ],
           "publicTypes" : [
             "ThinkingNote"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 1
+          }
         }
       ],
       "id" : "kit.models",
@@ -1382,6 +1804,67 @@
 
           ],
           "imports" : [
+            "Foundation"
+          ],
+          "lines" : 187,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/Benchmarks.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "Benchmarks"
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 5,
+            "throwingFunctions" : 1
+          }
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 59,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf/RuntimeStats.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "RuntimeStats"
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
+        }
+      ],
+      "id" : "kit.perf",
+      "layerID" : "service",
+      "name" : "Perf",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf",
+      "publicTypes" : [
+        "Benchmarks",
+        "RuntimeStats"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
             "CryptoKit",
             "Foundation"
           ],
@@ -1392,7 +1875,15 @@
           ],
           "publicTypes" : [
             "ConvertService"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 1,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 22,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1409,7 +1900,15 @@
           ],
           "publicTypes" : [
             "EventKitBridge"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 2,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 1
+          }
         },
         {
           "guardedSymbols" : [
@@ -1425,7 +1924,15 @@
           ],
           "publicTypes" : [
             "GitService"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1441,7 +1948,15 @@
           ],
           "publicTypes" : [
             "IdeaActions"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1461,7 +1976,15 @@
           ],
           "publicTypes" : [
             "ProcessRunner"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1478,7 +2001,15 @@
           "publicTypes" : [
             "PromptError",
             "PromptService"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 1,
+            "throwingFunctions" : 2
+          }
         },
         {
           "guardedSymbols" : [
@@ -1494,7 +2025,15 @@
           ],
           "publicTypes" : [
             "ReviewService"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1511,7 +2050,15 @@
           "publicTypes" : [
             "RunLogError",
             "RunLogService"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 1
+          }
         },
         {
           "guardedSymbols" : [
@@ -1527,7 +2074,15 @@
           ],
           "publicTypes" : [
             "SkillsService"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 1
+          }
         }
       ],
       "id" : "kit.services",
@@ -1565,7 +2120,15 @@
           ],
           "publicTypes" : [
             "Stats"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "kit.stats",
@@ -1593,7 +2156,15 @@
           ],
           "publicTypes" : [
             "VaultError"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 2,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 4
+          }
         },
         {
           "guardedSymbols" : [
@@ -1609,7 +2180,15 @@
           ],
           "publicTypes" : [
             "BookmarkStore"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 2,
+            "throwingFunctions" : 1
+          }
         },
         {
           "guardedSymbols" : [
@@ -1627,7 +2206,15 @@
             "CloudFileState",
             "CloudSyncService",
             "ConflictReport"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 6,
+            "throwingFunctions" : 5
+          }
         },
         {
           "guardedSymbols" : [
@@ -1643,7 +2230,15 @@
           ],
           "publicTypes" : [
             "ConflictPolicy"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1660,7 +2255,15 @@
           "publicTypes" : [
             "VaultRoot",
             "VaultWarning"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         },
         {
           "guardedSymbols" : [
@@ -1676,7 +2279,15 @@
           ],
           "publicTypes" : [
             "VaultStore"
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 1,
+            "fatalSites" : 0,
+            "forceUnwraps" : 2,
+            "forcedTries" : 0,
+            "silencedErrors" : 7,
+            "throwingFunctions" : 7
+          }
         }
       ],
       "id" : "kit.store",
@@ -1706,14 +2317,22 @@
             "Foundation",
             "LifeWorkflowKit"
           ],
-          "lines" : 63,
+          "lines" : 90,
           "path" : "apple/LifeWorkflowKit/Sources/archmap-tool/main.swift",
           "platformGates" : [
 
           ],
           "publicTypes" : [
 
-          ]
+          ],
+          "robustness" : {
+            "catchBlocks" : 3,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
         }
       ],
       "id" : "kit.tool",

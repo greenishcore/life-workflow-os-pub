@@ -33,6 +33,7 @@ public enum LayerRules {
         ("apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Stats",       "kit.stats",      "Stats",       "service",      "kit"),
         ("apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services",    "kit.services",   "Services",    "service",      "kit"),
         ("apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap",     "kit.archmap",    "ArchMap",     "service",      "kit"),
+        ("apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Perf",        "kit.perf",       "Perf",        "service",      "kit"),
         ("apple/LifeWorkflowKit/Sources/archmap-tool",                "kit.tool",       "archmap-tool","service",      "tool"),
         ("apple/LifeOSApp/Sources/Shared/Intents",                    "app.intents",    "Intents",     "presentation", "shared"),
         ("apple/LifeOSApp/Sources/Shared",                            "app.shared",     "Shared",      "presentation", "shared"),

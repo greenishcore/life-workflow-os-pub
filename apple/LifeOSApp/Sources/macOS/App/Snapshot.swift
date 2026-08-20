@@ -53,6 +53,7 @@ enum Snapshot {
             // 否则截出来的是空状态而不是真实状态
             await state.refreshSkills(since: ReviewService.defaultSince(days: 30))
             await state.loadArchMap()
+            await state.loadPerformance()
             log("[snapshot] 数据就绪，\(state.items.count) 条记录，\(state.skills.count) 个 skill，"
                 + "\(state.archModel?.modules.count ?? 0) 个模块")
             do {
