@@ -7,7 +7,7 @@ struct SkillModelTests {
 
     @Test("能读仓库里已有的 skill 文件")
     func parsesRealSkill() throws {
-        let url = repoRoot.appendingPathComponent("skills/convert-document.md")
+        let url = repoRoot.appendingPathComponent("seed/skills/convert-document.md")
         try #require(FileManager.default.fileExists(atPath: url.path))
         let skill = try #require(Skill.from(text: String(contentsOf: url, encoding: .utf8), url: url))
         #expect(!skill.skillID.isEmpty)

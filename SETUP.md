@@ -56,11 +56,11 @@ export OPENAI_API_KEY=sk-...        # Key 只走环境变量，不落盘
 vault 就是标准 Obsidian 库，两边可以同时开、互不干扰。
 不装也能用应用的全部功能；装了适合做双链漫游、图谱、移动端查看。
 
-Obsidian → 「打开文件夹作为库」→ 选本仓库的 `vault/`。推荐插件：
+Obsidian → 「打开文件夹作为库」→ 选 `~/LifeWorkflowOS/vault/`。推荐插件：
 
 | 插件 | 用途 |
 |------|------|
-| Templater | 用 `vault/Templates/` 做可编程模板 |
+| Templater | 用 vault 里的 `Templates/` 做可编程模板 |
 | Dataview | frontmatter 当数据库查询 |
 | Kanban / Tasks | 看板与任务视图 |
 | Calendar + Periodic Notes | 每日/周/月笔记 |
@@ -83,21 +83,42 @@ cd ~/tools/notes-exporter && python3 -m venv .venv && .venv/bin/pip install -r r
 ## 6. 定时任务（可选）
 
 ```bash
-cp scripts/launchd/com.me.reminders2obsidian.plist ~/Library/LaunchAgents/
-# 改 plist 里的脚本路径后：
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.me.reminders2obsidian.plist
+bash scripts/launchd/install.sh              # 用默认提醒列表
+bash scripts/launchd/install.sh 我的提醒      # 或指定列表名
+```
+
+安装器会按你的真实路径生成 plist（launchd 不展开 `$HOME`，路径必须绝对），
+并从 `lifeos` 的配置里读出 vault 位置，避免「应用读 A、定时任务写 B」。
+
+卸载：
+
+```bash
+launchctl bootout gui/$(id -u)/com.lifeos.sync && rm ~/Library/LaunchAgents/com.lifeos.sync.plist
 ```
 
 ## 7. vault 位置
 
-默认是本仓库的 `vault/`。要换：
+默认 `~/LifeWorkflowOS/vault`——**在仓库之外**，这样升级代码不碰笔记、
+笔记也不会被误提交进 git。要换：
 
 - **界面**：设置 → 知识库位置 → 浏览 → 应用（写入 `~/.config/lifeos/config.json`）
 - **命令行**：`VAULT_DIR=/你的/路径 ./bin/lifeos capture "点子"`
+- **整体搬家**：`LIFEOS_HOME=/你的/路径`（vault / logs / prompts / skills 一起挪）
 
-优先级：**环境变量 > `~/.config/lifeos/config.json` > 仓库默认值**。
+优先级：**环境变量 > `~/.config/lifeos/config.json` > 默认值**。
 
-> 建议：含隐私的 vault 单独建**私有**仓库；本仓库只放系统/脚本/模板/文档。
+### 放进 iCloud（多设备共用）
+
+```bash
+export LIFEOS_HOME="$HOME/Library/Mobile Documents/com~apple~CloudDocs/LifeWorkflowOS"
+```
+
+iOS 端不需要这个环境变量：它用文档选择器让你直接选中 iCloud Drive 里的
+同一个文件夹（免费 Apple ID 也能用，不需要 iCloud 容器权益）。
+
+> 想给笔记做版本控制，就在 vault 所在目录单独 `git init`——**不要**把它放进
+> 本仓库。如果 vault 在 iCloud 里，用 `git init --separate-git-dir=~/.lifevault.git .`
+> 把 `.git` 放到 iCloud 之外，否则 iCloud 会去同步 git 内部文件并制造冲突。
 
 ## 8. 自检
 

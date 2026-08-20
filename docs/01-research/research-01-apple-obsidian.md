@@ -168,13 +168,13 @@ TASK FROM "Inbox" WHERE !completed
 launchd plist 示例（每 30 分钟把 Reminders 导出到 vault）：
 ```xml
 <dict>
-  <key>Label</key><string>com.me.reminders2obsidian</string>
+  <key>Label</key><string>com.lifeos.sync</string>
   <key>ProgramArguments</key>
   <array><string>/usr/bin/osascript</string><string>/Users/me/scripts/reminders2obsidian.scpt</string></array>
   <key>StartInterval</key><integer>1800</integer>
 </dict>
 ```
-装载：`launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.me.reminders2obsidian.plist`
+装载：`launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.lifeos.sync.plist`
 
 ---
 

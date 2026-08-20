@@ -244,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = get_config()
     cfg.ensure_dirs()
+    cfg.seed_once()   # 首次运行补齐模板与示例，之后是空操作
     ctx = AppContext(config=cfg, repo=VaultRepository(cfg),
                      palette=PALETTES.get(cfg.theme, PALETTES["light"]))
     win = MainWindow(ctx)

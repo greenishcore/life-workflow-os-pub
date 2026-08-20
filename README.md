@@ -28,6 +28,27 @@ ln -sfn "$PWD/dist/Life Workflow OS.app" /Applications/
 ```
 
 **依赖**：macOS + Python 3.10+ + `PyQt5` + `PyYAML`。
+
+## 你的数据在哪
+
+**在仓库之外**，默认 `~/LifeWorkflowOS/`：
+
+```
+~/LifeWorkflowOS/
+├── vault/      # 你的笔记（Markdown 唯一事实源）
+├── logs/       # 运行日志
+├── prompts/    # 提示词
+└── skills/     # 沉淀下来的可复用技能
+```
+
+这是有意的分离：**仓库装代码，`~/LifeWorkflowOS/` 装你的私人内容**。
+所以 `git pull` 升级不会碰你的笔记，你的笔记也不会被误提交进 git。
+
+首次运行会把仓库里 `seed/` 的模板和示例笔记复制过去（**只在文件不存在时复制，
+从不覆盖**），所以第一次打开看板不是空的。示例笔记以 `示例-` 开头，删掉即可。
+
+换位置：`LIFEOS_HOME=/你的/路径`，或单独指定 `VAULT_DIR=...`，
+或在界面里「设置 → 知识库位置」（写入 `~/.config/lifeos/config.json`）。
 其余（pandoc / markitdown / ocrmypdf / gh）都是**可选**的，缺了只影响对应功能，
 应用内「设置 → 依赖体检」会告诉你缺什么、装了有什么用。
 
@@ -90,8 +111,9 @@ life-workflow-os/
 │   ├── cli.py             #   命令行入口
 │   ├── services/          #   convert / prompts / runlog / review / apple / archive
 │   └── gui/               #   ★ PyQt5 桌面应用（theme / charts / widgets / pages）
-├── vault/                 # 你的知识库（Markdown 唯一事实源）
-├── scripts/               # 兼容壳 + AppleScript
+├── seed/                  # 随仓库分发的种子：笔记模板、示例笔记、内置 skills
+│                          #   首次运行复制到 ~/LifeWorkflowOS/，之后互不相干
+├── scripts/               # 兼容壳 + AppleScript + launchd 安装器
 ├── tools/                 # 打包 / 图标 / GUI 冒烟测试
 ├── tests/                 # 单元测试（44 项）
 ├── docs/                  # 调研 / 架构 / 路线图 / 阶段报告
@@ -123,9 +145,10 @@ bash tools/build_app.sh                  # 重新打包 .app
 
 架构说明见 [docs/02-architecture/architecture-v2.md](docs/02-architecture/architecture-v2.md)。
 
-## 仓库
+## 许可证
 
-GitHub（私有）：https://github.com/greenishcore/life-workflow-os
+[AGPL-3.0](LICENSE)。可以自由使用、修改、分发；
+如果你改了它并对外提供服务，改动也要以同样的许可证开源。
 
 ## 状态
 

@@ -13,6 +13,16 @@ from pathlib import Path
 # 仓库根目录 = 本文件的上两级（lifeos/config.py → lifeos/ → repo/）
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# 个人数据根目录。**默认在仓库之外**，这一点是有意的：
+# 仓库装的是代码，vault / 日志 / 提示词装的是你的私人内容。两者放一起，
+# 「clone 下来试用」就会变成「把私人笔记提交进 git 仓库」。
+LIFEOS_HOME = Path(os.environ.get("LIFEOS_HOME", Path.home() / "LifeWorkflowOS")).expanduser()
+
+# 仓库自带的种子内容，首次运行复制到 LIFEOS_HOME，之后两边互不相干。
+#   seed/vault、seed/skills、seed/prompts  骨架与模板 —— 缺了就补
+#   seed/examples                          示例笔记   —— 只在 vault 还没有笔记时放一次
+SEED_ROOT = REPO_ROOT / "seed"
+
 CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "lifeos"
 CONFIG_FILE = CONFIG_HOME / "config.json"
 
@@ -21,12 +31,12 @@ CONFIG_FILE = CONFIG_HOME / "config.json"
 class Config:
     """所有路径与偏好的唯一来源。"""
 
-    vault_dir: str = str(REPO_ROOT / "vault")
-    logs_dir: str = str(REPO_ROOT / "logs")
-    prompts_dir: str = str(REPO_ROOT / "prompts")
-    cache_dir: str = str(REPO_ROOT / ".cache")
-    scripts_dir: str = str(REPO_ROOT / "scripts")
-    skills_dir: str = str(REPO_ROOT / "skills")
+    vault_dir: str = str(LIFEOS_HOME / "vault")
+    logs_dir: str = str(LIFEOS_HOME / "logs")
+    prompts_dir: str = str(LIFEOS_HOME / "prompts")
+    cache_dir: str = str(LIFEOS_HOME / ".cache")
+    scripts_dir: str = str(REPO_ROOT / "scripts")   # 代码，跟着仓库走
+    skills_dir: str = str(LIFEOS_HOME / "skills")
 
     # 格式转换 pipeline 的落点
     convert_raw_dir: str = ""
@@ -72,6 +82,10 @@ class Config:
         return Path(self.scripts_dir).expanduser()
 
     @property
+    def skills(self) -> Path:
+        return Path(self.skills_dir).expanduser()
+
+    @property
     def run_log_jsonl(self) -> Path:
         return self.logs / "run-log.jsonl"
 
@@ -97,6 +111,7 @@ class Config:
             ("VAULT_DIR", "vault_dir"),
             ("LOG_DIR", "logs_dir"),
             ("PROMPT_DIR", "prompts_dir"),
+            ("SKILLS_DIR", "skills_dir"),
             ("CONVERT_CACHE_DIR", "cache_dir"),
             ("CONVERT_RAW_DIR", "convert_raw_dir"),
             ("CONVERT_MD_DIR", "convert_md_dir"),
@@ -129,12 +144,52 @@ class Config:
         return CONFIG_FILE
 
     def ensure_dirs(self) -> None:
-        for p in (self.vault, self.logs, self.prompts, self.cache):
+        for p in (self.vault, self.logs, self.prompts, self.cache, self.skills):
             p.mkdir(parents=True, exist_ok=True)
         for sub in ("Inbox", "Daily", "Projects", "Areas", "Resources", "Archive", "Dashboard"):
             (self.vault / sub).mkdir(parents=True, exist_ok=True)
         for sub in ("00_inbox", "01_rewritten", "02_templates"):
             (self.prompts / sub).mkdir(parents=True, exist_ok=True)
+
+    # ---------- 首次运行播种 ----------
+    def seed_once(self) -> None:
+        """把仓库自带的模板 / 内置 skills / 提示词模板补进个人数据目录。
+
+        **只在目标文件不存在时复制，从不覆盖**：升级仓库不会动你改过的模板，
+        误删了某个模板则会在下次启动时自动补回来。
+
+        示例笔记走另一条规则（见 `_has_notes`）——只在 vault 里还一条笔记都没有时
+        放一次。否则你删掉示例之后，每次启动它们又会冒出来。
+
+        刻意**不放在 `ensure_dirs()` 里**：那个方法的职责是建目录，
+        往用户的 vault 里写内容是另一回事，混在一起会让测试和脚本意外多出文件。
+        """
+        for sub, target in (("vault", self.vault), ("skills", self.skills),
+                            ("prompts", self.prompts)):
+            _copy_missing(SEED_ROOT / sub, target)
+        if not self._has_notes():
+            _copy_missing(SEED_ROOT / "examples", self.vault)
+
+    def _has_notes(self) -> bool:
+        """vault 里有没有真正的笔记（模板与目录说明不算）。"""
+        return any(
+            p for p in self.vault.rglob("*.md")
+            if "Templates" not in p.parts and p.name != "README.md"
+        )
+
+
+def _copy_missing(src: Path, target: Path) -> None:
+    """把 src 下的文件补到 target，已存在的一律跳过。"""
+    if not src.is_dir():
+        return
+    for item in sorted(src.rglob("*")):
+        if item.is_dir() or item.name == ".gitkeep":
+            continue
+        dst = target / item.relative_to(src)
+        if dst.exists():
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(item.read_bytes())
 
 
 _cached: Config | None = None

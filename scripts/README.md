@@ -37,10 +37,11 @@ brew install fswatch ical-buddy
 ## 定时任务（launchd）
 
 ```bash
-mkdir -p ~/Library/LaunchAgents
-cp scripts/launchd/com.me.reminders2obsidian.plist ~/Library/LaunchAgents/
-# 改掉 plist 里的脚本路径与 Label 后装载：
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.me.reminders2obsidian.plist
+bash scripts/launchd/install.sh              # 用默认提醒列表
+bash scripts/launchd/install.sh 我的提醒      # 或指定列表名
 # 卸载：
-launchctl bootout gui/$(id -u)/com.me.reminders2obsidian
+launchctl bootout gui/$(id -u)/com.lifeos.sync && rm ~/Library/LaunchAgents/com.lifeos.sync.plist
 ```
+
+安装器按你的真实路径生成 plist 再装载——launchd 不展开 `$HOME`，
+路径必须是绝对的，手改容易改错，而改错了 launchd 只会静默不跑。

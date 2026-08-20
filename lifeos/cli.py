@@ -218,6 +218,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     ap = build_parser()
     args = ap.parse_args(argv)
+    cfg = get_config()
+    cfg.ensure_dirs()
+    cfg.seed_once()   # 首次运行补齐模板与示例，之后是空操作
     if not getattr(args, "func", None):
         return _cmd_gui(args)
     return args.func(args)

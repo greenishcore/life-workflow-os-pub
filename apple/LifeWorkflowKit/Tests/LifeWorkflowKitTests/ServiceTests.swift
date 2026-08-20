@@ -201,7 +201,11 @@ struct GitServiceTests {
         let found = try #require(GitService.findRepository(startingAt: here))
         #expect(FileManager.default.fileExists(
             atPath: found.appendingPathComponent(".git").path))
-        #expect(found.lastPathComponent == "life-workflow-os")
+        // 断言的是「找到的根是本文件的某级祖先」，而不是目录叫什么名字——
+        // 别人把仓库 clone 成任何目录名，这条都该成立。
+        // 两边都要解符号链接：/tmp 是 /private/tmp 的软链，不解会假失败。
+        let root = found.resolvingSymlinksInPath().path
+        #expect(here.resolvingSymlinksInPath().path.hasPrefix(root + "/"))
     }
 
     @Test("不在仓库里时返回 nil，而不是瞎猜一个路径")

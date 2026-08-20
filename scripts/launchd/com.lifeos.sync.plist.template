@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 每 30 分钟把 Apple 提醒 + 日历同步进 vault。
+         __REPO_ROOT__ / __REMINDER_LIST__ / __VAULT_DIR__ 由 install.sh 替换，不要手改。 -->
+    <key>Label</key>
+    <string>com.lifeos.sync</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__REPO_ROOT__/scripts/reminders2obsidian.sh</string>
+        <string>__REMINDER_LIST__</string>
+    </array>
+
+    <!-- vault 位置通过环境变量传入，与 lifeos 的配置保持一致 -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>VAULT_DIR</key>
+        <string>__VAULT_DIR__</string>
+    </dict>
+
+    <key>StartInterval</key>
+    <integer>1800</integer>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/com.lifeos.sync.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/com.lifeos.sync.err</string>
+</dict>
+</plist>

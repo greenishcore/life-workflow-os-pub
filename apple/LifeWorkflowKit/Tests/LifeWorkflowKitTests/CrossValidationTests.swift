@@ -55,7 +55,7 @@ struct CrossValidationTests {
     @Test("Swift 解析结果与 Python 逐字段一致")
     func modelsMatch() throws {
         for entry in Self.entries {
-            let source = repoRoot.appendingPathComponent("vault").appendingPathComponent(entry.source)
+            let source = repoRoot.appendingPathComponent("seed/examples").appendingPathComponent(entry.source)
             let text = try String(contentsOf: source, encoding: .utf8)
             let item = try #require(Item.from(text: text, url: source), "\(entry.source) 应能解析")
 
@@ -86,7 +86,7 @@ struct CrossValidationTests {
     @Test("Swift 写回内容与 Python 逐字节一致")
     func outputBytesMatch() throws {
         for entry in Self.entries {
-            let source = repoRoot.appendingPathComponent("vault").appendingPathComponent(entry.source)
+            let source = repoRoot.appendingPathComponent("seed/examples").appendingPathComponent(entry.source)
             let text = try String(contentsOf: source, encoding: .utf8)
             let item = try #require(Item.from(text: text, url: source))
             let expectedURL = Self.fixturesDir.appendingPathComponent("\(entry.key).expected.md")
@@ -105,7 +105,7 @@ struct CrossValidationTests {
     @Test("二次保存稳定（不产生噪音 diff）")
     func saveIsStable() throws {
         for entry in Self.entries {
-            let source = repoRoot.appendingPathComponent("vault").appendingPathComponent(entry.source)
+            let source = repoRoot.appendingPathComponent("seed/examples").appendingPathComponent(entry.source)
             let text = try String(contentsOf: source, encoding: .utf8)
             let once = try #require(Item.from(text: text, url: source)).toText()
             let twice = try #require(Item.from(text: once, url: source)).toText()

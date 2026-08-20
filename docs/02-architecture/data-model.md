@@ -45,7 +45,7 @@ seed（种子）→ sprout（发芽）→ doing（推进中）→ done（完成�
 ---
 type: idea
 id: 2026-08-16-001
-title: 生活工作流改造
+title: 搭建家庭影音库
 created: 2026-08-16
 status: doing
 priority: high
@@ -59,7 +59,7 @@ next_actions:
   - 落地可视化看板
 ---
 
-# 生活工作流改造
+# 搭建家庭影音库
 
 正文（可选，叙述性内容）。
 ```

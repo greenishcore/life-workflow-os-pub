@@ -7,9 +7,12 @@ name: archmap
 # 架构不会每次提交都变，每周一次 + 需要时手动触发已经够用；
 # 想立刻看到改动效果，在应用「架构地图」页点「从源码重算」即可。
 on:
+  # 仓库公开后 GitHub 托管 runner 免费不限量，所以改回「代码一变就重算」——
+  # 之前限成每周一次纯粹是因为私有仓库上 macOS runner 按 10 倍扣配额。
+  push:
+    paths:
+      - 'apple/**'
   workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * 1'   # 每周一 03:00 UTC
 
 permissions:
   contents: write

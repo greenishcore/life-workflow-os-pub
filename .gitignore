@@ -4,8 +4,15 @@
 .LSOverride
 Icon?
 
-# 隐私/敏感数据（个人笔记默认不进公开仓库；如使用私有仓库可放开）
-# 建议：个人 vault 内容单独一个私有仓库，本仓库只放「系统/脚本/模板/文档」
+# 个人数据默认就在仓库之外（~/LifeWorkflowOS/，见 lifeos/config.py 的 LIFEOS_HOME）。
+# 下面几条是双保险：万一有人把 LIFEOS_HOME 指回仓库，私人内容也不会被提交。
+# 注意前导斜杠——只锚定仓库根，不会误伤 seed/vault 这类随仓库分发的模板。
+/vault/
+/logs/
+/prompts/
+/skills/
+
+# 凭据
 secrets.env
 .env
 *.key
@@ -29,14 +36,6 @@ venv/
 # 转换缓存（可重建，无需入库）
 .cache/
 converted/
-
-# 转换运行时产物（原始输入/中间态/生成输出均为可重建文件）
-vault/Attachments/_raw/
-vault/Attachments/_md/
-vault/Attachments/_out/
-
-# 日志中可能含隐私；按需忽略，默认保留结构化日志但排除原始敏感字段
-logs/*.private.jsonl
 
 # 系统
 *.log

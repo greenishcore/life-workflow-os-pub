@@ -2,7 +2,7 @@
 
 > 日期：2026-08-16
 > 对应路线图：`docs/03-roadmap/roadmap.md` 的 Phase 0–3
-> 仓库：https://github.com/greenishcore/life-workflow-os（私有，main 分支）
+> 仓库：本仓库（main 分支）
 
 ## 完成情况
 
