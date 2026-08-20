@@ -7,8 +7,6 @@ struct LogsView: View {
     @Environment(\.isSnapshotting) private var isSnapshotting
 
     @State private var rangeDays = 7
-    @State private var logs: [RunLog] = []
-    @State private var stats = ReviewService.Stats()
 
     // 手动记一条
     @State private var objective = ""
@@ -31,9 +29,9 @@ struct LogsView: View {
             .labelsHidden()
             .frame(width: 120)
 
-            Button("生成周复盘报告") { Task { await writeReport() } }
+            Button("生成周复盘报告") { Task { await state.writeReviewReport() } }
                 .buttonStyle(.borderedProminent)
-                .disabled(stats.total == 0)
+                .disabled(state.reviewStats.total == 0)
         } content: {
             kpis
             charts
@@ -42,19 +40,19 @@ struct LogsView: View {
             addCard
             tableCard
         }
-        .task(id: rangeDays) { await load() }
+        .task(id: rangeDays) { await state.refreshReview(days: rangeDays) }
     }
 
     private var kpis: some View {
         HStack(spacing: Theme.gap) {
-            StatTile(label: "运行次数", value: "\(stats.total)", delta: "\(stats.since) 起")
-            StatTile(label: "成功率", value: "\(Int(stats.rate))%",
-                     delta: "成功 \(stats.success)", color: RunLog.Status.success.color)
-            StatTile(label: "失败/部分", value: "\(stats.failed)",
+            StatTile(label: "运行次数", value: "\(state.reviewStats.total)", delta: "\(state.reviewStats.since) 起")
+            StatTile(label: "成功率", value: "\(Int(state.reviewStats.rate))%",
+                     delta: "成功 \(state.reviewStats.success)", color: RunLog.Status.success.color)
+            StatTile(label: "失败/部分", value: "\(state.reviewStats.failed)",
                      delta: "失败 + 部分成功", color: RunLog.Status.failed.color)
-            StatTile(label: "总耗时", value: "\(Int(stats.duration))s",
-                     delta: stats.total == 0 ? "—"
-                        : String(format: "平均 %.1fs/次", stats.duration / Double(stats.total)),
+            StatTile(label: "总耗时", value: "\(Int(state.reviewStats.duration))s",
+                     delta: state.reviewStats.total == 0 ? "—"
+                        : String(format: "平均 %.1fs/次", state.reviewStats.duration / Double(state.reviewStats.total)),
                      color: Theme.accent)
         }
     }
@@ -62,16 +60,16 @@ struct LogsView: View {
     private var charts: some View {
         HStack(alignment: .top, spacing: Theme.gap) {
             Card(title: "状态分布") {
-                if stats.total == 0 {
+                if state.reviewStats.total == 0 {
                     emptyChart
                 } else {
                     Chart(RunLog.Status.allCases, id: \.self) { s in
                         BarMark(x: .value("状态", s.label),
-                                y: .value("次数", stats.byStatus[s] ?? 0))
+                                y: .value("次数", state.reviewStats.byStatus[s] ?? 0))
                             .foregroundStyle(s.color)
                             .cornerRadius(4)
                             .annotation(position: .top) {
-                                Text("\(stats.byStatus[s] ?? 0)").font(Theme.Typo.micro)
+                                Text("\(state.reviewStats.byStatus[s] ?? 0)").font(Theme.Typo.micro)
                             }
                     }
                     .chartYAxis(.hidden)
@@ -79,10 +77,10 @@ struct LogsView: View {
                 }
             }
             Card(title: "工具使用 TopN") {
-                rankChart(stats.tools.map { ($0.name, $0.count) }, color: Theme.accent)
+                rankChart(state.reviewStats.tools.map { ($0.name, $0.count) }, color: Theme.accent)
             }
             Card(title: "错误 TopN", hint: "高频错误 = 该沉淀成 skill 的信号") {
-                rankChart(stats.errors.map { ($0.message, $0.count) }, color: .red)
+                rankChart(state.reviewStats.errors.map { ($0.message, $0.count) }, color: .red)
             }
         }
     }
@@ -138,16 +136,16 @@ struct LogsView: View {
 
     private var tableCard: some View {
         Card(title: "运行日志", hint: "数据源 logs/run-log.jsonl") {
-            if logs.isEmpty {
+            if state.reviewLogs.isEmpty {
                 EmptyStateView(symbol: "clock", title: "这段时间还没有日志",
                                hint: "用上面的表单记一条，或用命令行 lifeos log")
                     .frame(height: 130)
             } else if isSnapshotting {
                 VStack(spacing: 0) {
-                    ForEach(logs.prefix(6)) { LogRow(log: $0) }
+                    ForEach(state.reviewLogs.prefix(6)) { LogRow(log: $0) }
                 }
             } else {
-                Table(logs) {
+                Table(state.reviewLogs) {
                     TableColumn("时间") { Text($0.timestamp.replacingOccurrences(of: "T", with: " ")) }
                         .width(160)
                     TableColumn("状态") { log in
@@ -173,7 +171,7 @@ struct LogsView: View {
         Card(title: "本期可沉淀",
              hint: "从运行日志算出来的：重复的坑该有对策，稳定的流程该被固化") {
             if state.proposals.isEmpty {
-                Text(logs.isEmpty
+                Text(state.reviewLogs.isEmpty
                      ? "还没有运行日志。用一次格式转换或版本归档，系统会自动留痕，这里就有料可算了。"
                      : "本期没有值得沉淀的模式——错误没有重复，流程也没有稳定复现。")
                     .font(Theme.Typo.list).foregroundStyle(Theme.faint)
@@ -253,13 +251,8 @@ struct LogsView: View {
 
     // MARK: 动作
 
-    private func load() async {
-        let since = ReviewService.defaultSince(days: rangeDays)
-        let loaded = await state.runLog.load(since: since)
-        logs = loaded
-        stats = ReviewService.aggregate(loaded, since: since)
-        await state.refreshSkills(since: since)
-    }
+    // 这一页只做布局与表单：日志聚合、落盘、生成复盘都在 AppState，
+    // 这样界面设计交接出去之后，改排版碰不到业务逻辑。
 
     private func addLog() async {
         func split(_ s: String) -> [String] {
@@ -270,29 +263,9 @@ struct LogsView: View {
                          toolsUsed: split(tools), outputs: split(outputs),
                          status: status, errors: split(errors),
                          durationSeconds: duration, model: model, notes: notes)
-        do {
-            let saved = try await state.runLog.append(log)
+        if await state.appendRunLog(log, refreshingDays: rangeDays) {
             objective = ""; tools = ""; outputs = ""; errors = ""; notes = ""; model = ""
             duration = 0
-            state.notify("已记录 \(saved.runID)")
-            await load()
-        } catch {
-            state.notify("记录失败：\(error.localizedDescription)")
-        }
-    }
-
-    private func writeReport() async {
-        let md = ReviewService.renderMarkdown(stats)
-        let target = state.store.dailyNote(date: nil)
-            .deletingLastPathComponent()
-            .appendingPathComponent("周复盘-\(stats.since).md")
-        do {
-            try FileManager.default.createDirectory(
-                at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try md.write(to: target, atomically: true, encoding: .utf8)
-            state.notify("周复盘已生成 → \(target.lastPathComponent)")
-        } catch {
-            state.notify("生成失败：\(error.localizedDescription)")
         }
     }
 }

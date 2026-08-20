@@ -156,40 +156,26 @@ struct CaptureView: View {
         captures = await state.store.captureLog(days: 7)
     }
 
+    // 只做派发：权限流程、取数、写入 Daily 都在 AppState.importFromApple，
+    // 这样改这一页的排版碰不到 EventKit。
     private func importReminders() async {
         busy = true
         defer { busy = false }
-        log.append("[提醒] 请求权限…")
-        let bridge = EventKitBridge()
-        switch await bridge.requestRemindersAccess() {
-        case .granted:
-            let items = await bridge.reminders(listName: reminderList, includeCompleted: includeDone)
-            guard !items.isEmpty else { log.append("[提醒] 该列表没有可导出的项"); return }
-            await write(section: "提醒", content: EventKitBridge.markdown(for: items),
-                        label: "\(items.count) 条提醒")
-        case .denied:
-            log.append("❌ 权限被拒绝。去 系统设置 → 隐私与安全性 → 提醒事项 开启")
-        case .unavailable(let why):
-            log.append("❌ 不可用：\(why)")
-        }
+        await state.importFromApple(
+            kind: .reminders, listName: reminderList, days: days,
+            includeCompleted: includeDone,
+            log: { line in log.append(line) })
+        await refreshCaptures()
     }
 
     private func importEvents() async {
         busy = true
         defer { busy = false }
-        log.append("[日程] 请求权限…")
-        let bridge = EventKitBridge()
-        switch await bridge.requestCalendarAccess() {
-        case .granted:
-            let items = await bridge.events(calendarName: calendarName, days: days)
-            guard !items.isEmpty else { log.append("[日程] 未来 \(days) 天没有日程"); return }
-            await write(section: "日程", content: EventKitBridge.markdown(for: items),
-                        label: "\(items.count) 个日程")
-        case .denied:
-            log.append("❌ 权限被拒绝。去 系统设置 → 隐私与安全性 → 日历 开启")
-        case .unavailable(let why):
-            log.append("❌ 不可用：\(why)")
-        }
+        await state.importFromApple(
+            kind: .events, listName: calendarName, days: days,
+            includeCompleted: false,
+            log: { line in log.append(line) })
+        await refreshCaptures()
     }
 
     /// 写入当天 Daily 的对应段落（重复导入是替换，不是追加）

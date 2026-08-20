@@ -8,11 +8,7 @@ struct ConvertView: View {
     @State private var source: URL?
     @State private var target: ConvertService.Target = .pdf
     @State private var customOutput = ""
-    @State private var log: [String] = []
-    @State private var busy = false
-    @State private var result: URL?
     @State private var isDropTargeted = false
-    @State private var cache: (count: Int, bytes: Int) = (0, 0)
 
     var body: some View {
         PageScaffold(destination: .convert) {
@@ -22,7 +18,7 @@ struct ConvertView: View {
             cacheCard
             toolsCard
         }
-        .task { refreshCache() }
+        .task { state.refreshConvertEnvironment() }
     }
 
     private var convertCard: some View {
@@ -40,16 +36,16 @@ struct ConvertView: View {
                 Text("输出到").font(Theme.Typo.list).foregroundStyle(.secondary)
                 TextField("留空 = 缓存目录旁的 out/", text: $customOutput)
 
-                Button("开始转换") { Task { await convert() } }
+                Button("开始转换") { start() }
                     .buttonStyle(.borderedProminent)
-                    .disabled(source == nil || busy)
-                if busy { ProgressView().controlSize(.small) }
+                    .disabled(source == nil || state.isConverting)
+                if state.isConverting { ProgressView().controlSize(.small) }
             }
 
-            if !log.isEmpty {
+            if !state.convertLog.isEmpty {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
-                        ForEach(Array(log.enumerated()), id: \.offset) { _, line in
+                        ForEach(Array(state.convertLog.enumerated()), id: \.offset) { _, line in
                             Text(line)
                                 .font(Theme.Typo.mono)
                                 .foregroundStyle(.secondary)
@@ -66,13 +62,15 @@ struct ConvertView: View {
             HStack {
                 Spacer()
                 Button("打开产物") {
-                    if let result { NSWorkspace.shared.open(result) }
+                    if let out = state.convertResult { NSWorkspace.shared.open(out) }
                 }
-                .disabled(result == nil)
+                .disabled(state.convertResult == nil)
                 Button("在访达中显示") {
-                    if let result { NSWorkspace.shared.activateFileViewerSelecting([result]) }
+                    if let out = state.convertResult {
+                        NSWorkspace.shared.activateFileViewerSelecting([out])
+                    }
                 }
-                .disabled(result == nil)
+                .disabled(state.convertResult == nil)
             }
         }
     }
@@ -109,7 +107,7 @@ struct ConvertView: View {
                 guard let url else { return }
                 Task { @MainActor in
                     source = url
-                    log.append("已拖入：\(url.lastPathComponent)")
+                    state.appendConvertLog("已拖入：\(url.lastPathComponent)")
                 }
             }
             return true
@@ -119,25 +117,21 @@ struct ConvertView: View {
     private var cacheCard: some View {
         Card(title: "转换缓存", hint: "键 = sha256(输入) + 转换器版本；命中即复用，不重复烧算力") {
             HStack {
-                Text(cache.count == 0
+                Text(state.convertCache.count == 0
                      ? "暂无缓存 · \(state.config.cacheURL.path)"
-                     : "\(cache.count) 条缓存 · \(cache.bytes / 1024) KB · \(state.config.cacheURL.path)")
+                     : "\(state.convertCache.count) 条缓存 · \(state.convertCache.bytes / 1024) KB · \(state.config.cacheURL.path)")
                     .font(Theme.Typo.mono)
                     .foregroundStyle(Theme.faint)
                 Spacer()
-                Button("清空缓存") {
-                    let n = ConvertService.clearCache(config: state.config)
-                    log.append("已清空 \(n) 条缓存")
-                    refreshCache()
-                }
-                .disabled(cache.count == 0)
+                Button("清空缓存") { state.clearConvertCache() }
+                .disabled(state.convertCache.count == 0)
             }
         }
     }
 
     private var toolsCard: some View {
         Card(title: "依赖体检", hint: "缺哪个装哪个，不影响其它功能") {
-            let tools = ConvertService.toolStatus()
+            let tools = state.convertTools
             LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading),
                                 GridItem(.flexible(), alignment: .leading)], spacing: 6) {
                 ForEach(tools) { tool in
@@ -163,42 +157,9 @@ struct ConvertView: View {
         if panel.runModal() == .OK { source = panel.url }
     }
 
-    private func convert() async {
+    /// 只做派发。转换的编排、留痕、缓存刷新都在 AppState。
+    private func start() {
         guard let source else { return }
-        busy = true
-        result = nil
-        log.append("──── \(source.lastPathComponent) ────")
-        let started = Date()
-        defer { busy = false }
-
-        let output = customOutput.trimmingCharacters(in: .whitespaces)
-        let outcome = await ConvertService.convert(
-            source: source, to: target,
-            output: output.isEmpty ? nil : URL(fileURLWithPath: output),
-            config: state.config,
-            log: { line in Task { @MainActor in log.append(line) } })
-
-        if outcome.ok {
-            result = outcome.output
-            log.append("✅ \(outcome.message)\(outcome.cached ? "（命中缓存，未重复计算）" : "")")
-            state.notify("转换完成 → \(outcome.output?.lastPathComponent ?? "")")
-        } else {
-            log.append("❌ \(outcome.message)")
-            state.notify("转换失败")
-        }
-        // 自动留痕：这条数据正是周复盘提炼 skill 的原料
-        await state.logOperation(
-            objective: "转换 \(source.lastPathComponent) → \(target.rawValue)",
-            status: outcome.ok ? .success : .failed,
-            tools: [ConvertService.markdownTool(), "pandoc"].compactMap { $0 },
-            outputs: outcome.output.map { [$0.path] } ?? [],
-            errors: outcome.ok ? [] : [outcome.message],
-            duration: Date().timeIntervalSince(started),
-            notes: outcome.cached ? "命中缓存" : "")
-        refreshCache()
-    }
-
-    private func refreshCache() {
-        cache = ConvertService.cacheStats(config: state.config)
+        Task { await state.convert(source: source, to: target, output: customOutput) }
     }
 }

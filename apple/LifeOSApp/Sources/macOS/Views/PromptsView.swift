@@ -8,7 +8,6 @@ struct PromptsView: View {
     @State private var raw = ""
     @State private var content = ""
     @State private var currentURL: URL?
-    @State private var history: [URL] = []
     @State private var busy = false
 
     var body: some View {
@@ -18,7 +17,7 @@ struct PromptsView: View {
             rightPane
         }
         .background(Theme.pageBackground)
-        .task { history = PromptService.list(config: state.config) }
+        .task { state.refreshPromptHistory() }
     }
 
     private var leftPane: some View {
@@ -35,7 +34,7 @@ struct PromptsView: View {
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.border))
 
                 HStack {
-                    Text(PromptService.llmAvailable
+                    Text(state.isLLMAvailable
                          ? "LLM：\(state.config.openAIModel)"
                          : "未设置 OPENAI_API_KEY，只能生成脚手架")
                         .font(Theme.Typo.hint).foregroundStyle(Theme.faint)
@@ -44,24 +43,24 @@ struct PromptsView: View {
                         .disabled(raw.trimmingCharacters(in: .whitespaces).isEmpty || busy)
                     Button("用 LLM 重写") { Task { await generate(useLLM: true) } }
                         .buttonStyle(.borderedProminent)
-                        .disabled(!PromptService.llmAvailable
+                        .disabled(!state.isLLMAvailable
                                   || raw.trimmingCharacters(in: .whitespaces).isEmpty || busy)
                     if busy { ProgressView().controlSize(.small) }
                 }
             }
 
             Card(title: "已重写的提示词", hint: "都在 prompts/01_rewritten/，随仓库版本化") {
-                if history.isEmpty {
+                if state.promptHistory.isEmpty {
                     Text("还没有生成过").font(Theme.Typo.list).foregroundStyle(Theme.faint)
                 } else if isSnapshotting {
                     VStack(alignment: .leading, spacing: 4) {
-                        ForEach(history.prefix(8), id: \.self) { url in
+                        ForEach(state.promptHistory.prefix(8), id: \.self) { url in
                             Text(url.deletingPathExtension().lastPathComponent)
                                 .font(Theme.Typo.mono)
                         }
                     }
                 } else {
-                    List(history, id: \.self, selection: Binding(
+                    List(state.promptHistory, id: \.self, selection: Binding(
                         get: { currentURL },
                         set: { newValue in if let newValue { open(newValue) } }
                     )) { url in
@@ -114,28 +113,10 @@ struct PromptsView: View {
 
     private func generate(useLLM: Bool) async {
         busy = true
-        let started = Date()
         defer { busy = false }
-        do {
-            let doc = try await PromptService.rewrite(raw, useLLM: useLLM, config: state.config)
-            content = doc.content
-            currentURL = doc.outputURL
-            history = PromptService.list(config: state.config)
-            state.notify("[\(doc.mode.label)] 已生成 → \(doc.outputURL.lastPathComponent)")
-            await state.logOperation(
-                objective: "重写提示词：\(String(raw.prefix(30)))",
-                status: .success, tools: [useLLM ? "llm" : "scaffold"],
-                outputs: [doc.outputURL.path],
-                duration: Date().timeIntervalSince(started))
-        } catch {
-            content = "生成失败：\n\(error.localizedDescription)"
-            state.notify("生成失败")
-            await state.logOperation(
-                objective: "重写提示词：\(String(raw.prefix(30)))",
-                status: .failed, tools: [useLLM ? "llm" : "scaffold"],
-                errors: [error.localizedDescription],
-                duration: Date().timeIntervalSince(started))
-        }
+        let outcome = await state.rewritePrompt(raw, useLLM: useLLM)
+        content = outcome.content
+        if let url = outcome.url { currentURL = url }
     }
 
     private func open(_ url: URL) {

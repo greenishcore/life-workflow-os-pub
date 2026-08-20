@@ -100,49 +100,25 @@ struct CaptureView: View {
         captures = await state.store.captureLog(days: 7)
     }
 
+    // 只做派发：权限流程、取数、写入 Daily 都在 AppState.importFromApple，
+    // 与 macOS 端共用同一份实现。
     private func importReminders() async {
-        importing = true
-        defer { importing = false }
-        let bridge = EventKitBridge()
-        switch await bridge.requestRemindersAccess() {
-        case .granted:
-            let items = await bridge.reminders(listName: state.config.defaultReminderList)
-            guard !items.isEmpty else { importLog = "该列表没有可导出的提醒"; return }
-            await write("提醒", EventKitBridge.markdown(for: items), "\(items.count) 条提醒")
-        case .denied:
-            importLog = "权限被拒绝。去 设置 → 隐私与安全性 → 提醒事项 开启"
-        case .unavailable(let why):
-            importLog = "不可用：\(why)"
-        }
+        await runImport(.reminders, listName: state.config.defaultReminderList)
     }
 
     private func importEvents() async {
-        importing = true
-        defer { importing = false }
-        let bridge = EventKitBridge()
-        switch await bridge.requestCalendarAccess() {
-        case .granted:
-            let items = await bridge.events(calendarName: state.config.defaultCalendar, days: 7)
-            guard !items.isEmpty else { importLog = "未来 7 天没有日程"; return }
-            await write("日程", EventKitBridge.markdown(for: items), "\(items.count) 个日程")
-        case .denied:
-            importLog = "权限被拒绝。去 设置 → 隐私与安全性 → 日历 开启"
-        case .unavailable(let why):
-            importLog = "不可用：\(why)"
-        }
+        await runImport(.events, listName: state.config.defaultCalendar)
     }
 
-    private func write(_ section: String, _ content: String, _ label: String) async {
-        let note = state.store.dailyNote()
-        do {
-            _ = try await state.store.upsertSection(at: note, heading: section, content: content)
-            importLog = "已导入 \(label)"
-            state.notify("已导入 \(label)")
-            await state.reload()
-        } catch {
-            importLog = "写入失败：\(error.localizedDescription)"
-        }
+    private func runImport(_ kind: AppleImportKind, listName: String) async {
+        importing = true
+        defer { importing = false }
+        await state.importFromApple(
+            kind: kind, listName: listName, days: 7, includeCompleted: false,
+            log: { line in importLog = line })
+        await refresh()
     }
+
 }
 
 private struct CaptureLineRow: View {
