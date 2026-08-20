@@ -95,29 +95,44 @@ if ! ( cd "$APP_DIR" && xcodebuild -project LifeOS.xcodeproj -scheme "$SCHEME" \
   grep -E 'error:' "$OUT_ROOT/build-$PREFIX.log" | head -20 >&2 || true
   exit 1
 fi
-# 产物路径从 xcodebuild 问，不靠 find 猜：iOS 的构建目录里现在同时躺着
-# iPhone 应用和被嵌入的手表应用，find 撞上哪个是随机的。
+# 产物路径从 xcodebuild 问，不靠 find 猜：构建目录里同时躺着多个 .app
+# （手表是伴侣应用，iOS 产物里嵌着它），find 撞上哪个是随机的。
+#
+# 必须**按 target 段落取**，不能各取最后一条：手表 scheme 会连带拉进 iOS 宿主，
+# showBuildSettings 因此返回两个 target 的设置，混着取会把 iOS 的路径
+# 配上手表的安装目标（第一次就这么装错了）。
 APP=$( cd "$APP_DIR" && xcodebuild -project LifeOS.xcodeproj -scheme "$SCHEME" \
         -configuration Debug -destination "id=$DEV" -derivedDataPath "$DD" \
-        -showBuildSettings 2>/dev/null | awk -F' = ' '
-          /  TARGET_BUILD_DIR = /  { dir = $2 }
-          /  FULL_PRODUCT_NAME = / { name = $2 }
+        -showBuildSettings 2>/dev/null | awk -F' = ' -v want="$SCHEME" '
+          /^Build settings for action build and target / {
+              t = $0; sub(/.*target /, "", t); sub(/:.*/, "", t)
+              cur = (t == want)
+              next
+          }
+          cur && /  TARGET_BUILD_DIR = /  { dir = $2 }
+          cur && /  FULL_PRODUCT_NAME = / { name = $2 }
           END { if (dir && name) print dir "/" name }' )
 [ -n "$APP" ] && [ -d "$APP" ] || { echo "❌ 找不到 $SCHEME 的 .app 产物（拿到的是「$APP」）" >&2; exit 1; }
 echo "产物 $(basename "$APP")"
-xcrun simctl install "$DEV" "$APP" >/dev/null
-
-# ---------- 把夹具塞进 App 容器 ----------
-# 不这么做，截出来的是这台模拟器上残留的旧数据，换台机器结果就不一样。
-# 两端的默认 vault 都是容器里的 Documents/LifeOSVault（见 AppConfig.makeDefault）。
-CONTAINER=$(xcrun simctl get_app_container "$DEV" "$BUNDLE_ID" data)
-VAULT="$CONTAINER/Documents/LifeOSVault"
-rm -rf "$VAULT"
-mkdir -p "$VAULT/Inbox" "$VAULT/Projects"
-cp -R "$REPO/seed/vault/." "$VAULT/"
-cp "$REPO"/seed/examples/Inbox/*.md    "$VAULT/Inbox/"
-cp "$REPO"/seed/examples/Projects/*.md "$VAULT/Projects/"
-echo "夹具就绪：$(find "$VAULT" -name '*.md' | wc -l | tr -d ' ') 个文件"
+# ---------- 每张截图前：全新安装 + 塞夹具 ----------
+# **必须卸载重装，不能只 terminate。** SwiftUI 会恢复上次的滚动位置，
+# 只终止进程再启动，List 会停在上次翻到的地方——手表端就因此出过一次
+# 「基线是滚到中途截的」，比对报了 75% 假差异。
+# 卸载会连容器一起清掉，所以夹具要跟着重铺；铺 9 个文件是瞬间的事。
+fresh_install() {
+  xcrun simctl uninstall "$DEV" "$BUNDLE_ID" >/dev/null 2>&1 || true
+  xcrun simctl install "$DEV" "$APP" >/dev/null
+  local container vault
+  container=$(xcrun simctl get_app_container "$DEV" "$BUNDLE_ID" data)
+  vault="$container/Documents/LifeOSVault"
+  rm -rf "$vault"
+  mkdir -p "$vault/Inbox" "$vault/Projects"
+  cp -R "$REPO/seed/vault/." "$vault/"
+  cp "$REPO"/seed/examples/Inbox/*.md    "$vault/Inbox/"
+  cp "$REPO"/seed/examples/Projects/*.md "$vault/Projects/"
+}
+fresh_install
+echo "夹具就绪：$(find "$(xcrun simctl get_app_container "$DEV" "$BUNDLE_ID" data)/Documents/LifeOSVault" -name '*.md' | wc -l | tr -d ' ') 个文件"
 
 render() {
   local dest="$1"
@@ -125,7 +140,7 @@ render() {
   for appearance in "${APPEARANCES[@]}"; do
     xcrun simctl ui "$DEV" appearance "$appearance" >/dev/null 2>&1 || true
     for screen in "${SCREENS[@]}"; do
-      xcrun simctl terminate "$DEV" "$BUNDLE_ID" >/dev/null 2>&1 || true
+      fresh_install     # 冷启动，避免上一张的滚动位置带进来
       xcrun simctl launch "$DEV" "$BUNDLE_ID" "$SCREEN_ARG" "$screen" >/dev/null
       sleep "$SETTLE"
       xcrun simctl io "$DEV" screenshot "$dest/$screen-$appearance.png" >/dev/null 2>&1

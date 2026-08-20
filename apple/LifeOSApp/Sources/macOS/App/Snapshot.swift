@@ -105,27 +105,27 @@ enum Snapshot {
 
         var body: some View {
             HStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                     Text("Life Workflow OS").font(Theme.Typo.sidebarTitle)
                     Text("捕捉 → 整理 → 执行 → 复盘 → 归档")
                         .font(Theme.Typo.micro).foregroundStyle(Theme.faint)
-                    Divider().padding(.vertical, 8)
+                    Divider().padding(.vertical, Theme.Space.base)
                     ForEach(NavGroup.allCases) { group in
                         if !group.title.isEmpty {
                             Text(group.title).font(Theme.Typo.microStrong)
-                                .foregroundStyle(Theme.faint).padding(.top, 6)
+                                .foregroundStyle(Theme.faint).padding(.top, Theme.Space.inlineTight)
                         }
                         ForEach(group.destinations) { d in
                             Label(d.title, systemImage: d.symbol)
                                 .font(Theme.Typo.list)
                                 .foregroundStyle(d == destination ? Theme.accent : .secondary)
                                 .fontWeight(d == destination ? .semibold : .regular)
-                                .padding(.vertical, 3)
+                                .padding(.vertical, Theme.Space.textLine)
                         }
                     }
                     Spacer()
                 }
-                .padding(14)
+                .padding(Theme.Space.inlineWide)
                 .frame(width: 200, alignment: .leading)
                 .background(Theme.cardBackground)
 

@@ -32,15 +32,15 @@ struct RootView: View {
     }
 
     private var brand: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Theme.Space.textLine) {
             Text("Life Workflow OS").font(Theme.Typo.sidebarTitle)
             Text("捕捉 → 整理 → 执行 → 复盘 → 归档")
                 .font(Theme.Typo.micro)
                 .foregroundStyle(Theme.faint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 14)
-        .padding(.bottom, 8)
+        .padding(.horizontal, Theme.Space.inlineWide)
+        .padding(.bottom, Theme.Space.base)
     }
 
     @ViewBuilder
@@ -59,7 +59,7 @@ struct RootView: View {
     }
 
     private var statusBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Space.base) {
             if state.isLoading {
                 ProgressView().controlSize(.small)
             }
@@ -90,8 +90,8 @@ struct RootView: View {
                 .font(Theme.Typo.hint)
                 .foregroundStyle(Theme.faint)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
+        .padding(.horizontal, Theme.Space.inlineWide)
+        .padding(.vertical, Theme.Space.inlineTight)
         .background(.bar)
     }
 }

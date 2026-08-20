@@ -92,14 +92,14 @@ struct ArchMapView: View {
             VStack(spacing: 0) {
                 ForEach(Array(model.invariants.enumerated()), id: \.element.id) { index, inv in
                     if index > 0 { Divider() }
-                    HStack(alignment: .top, spacing: 10) {
+                    HStack(alignment: .top, spacing: Theme.Space.inline) {
                         Image(systemName: inv.passed ? "checkmark.circle.fill"
                                 : (inv.severity == .blocking ? "xmark.octagon.fill"
                                                              : "exclamationmark.triangle.fill"))
                             .foregroundStyle(inv.passed ? .green
                                              : (inv.severity == .blocking ? .red : .orange))
-                        VStack(alignment: .leading, spacing: 3) {
-                            HStack(spacing: 6) {
+                        VStack(alignment: .leading, spacing: Theme.Space.textLine) {
+                            HStack(spacing: Theme.Space.inlineTight) {
                                 Text(inv.title).font(Theme.Typo.cardTitle)
                                 Badge(text: inv.severity.label,
                                       color: inv.severity == .blocking ? .red : .orange)
@@ -116,7 +116,7 @@ struct ArchMapView: View {
                         }
                         Spacer(minLength: 0)
                     }
-                    .padding(.vertical, 7)
+                    .padding(.vertical, Theme.Space.base)
                 }
             }
         }
@@ -130,12 +130,12 @@ struct ArchMapView: View {
             ArchGraph(model: model,
                       violatingEdges: violatingEdgeKeys(model),
                       selected: $selectedModule)
-            HStack(spacing: 14) {
+            HStack(spacing: Theme.Space.inlineWide) {
                 // 按「共享程度」排，不用字典序
                 ForEach([("kit", "共享核心包"), ("shared", "跨端共享 UI"),
                          ("macOS", "macOS 专属"), ("iOS", "iOS 专属"),
                          ("tool", "命令行工具")], id: \.0) { key, label in
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Space.tight) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(legendColor(key)).frame(width: 9, height: 9)
                         Text(label).font(Theme.Typo.hint).foregroundStyle(.secondary)
@@ -167,8 +167,8 @@ struct ArchMapView: View {
                 }
             } else {
                 ForEach(state.benchmarks) { result in
-                    VStack(alignment: .leading, spacing: 3) {
-                        HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
+                        HStack(spacing: Theme.Space.base) {
                             Image(systemName: result.overBudget
                                   ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                                 .foregroundStyle(result.overBudget ? .orange : .green)
@@ -192,7 +192,7 @@ struct ArchMapView: View {
                         .frame(height: 4)
                         Text(result.detail).font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                     }
-                    .padding(.vertical, 5)
+                    .padding(.vertical, Theme.Space.tight)
                     Divider()
                 }
                 HStack {
@@ -208,7 +208,7 @@ struct ArchMapView: View {
     }
 
     private var runBenchButton: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Theme.Space.inlineTight) {
             if state.isBenchmarking { ProgressView().controlSize(.small) }
             Button("跑一次基准") { Task { await state.runBenchmarks() } }
                 .disabled(state.isBenchmarking)
@@ -226,7 +226,7 @@ struct ArchMapView: View {
                     .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 ForEach(ranked) { module in
-                    HStack(spacing: 10) {
+                    HStack(spacing: Theme.Space.inline) {
                         Text(module.name).font(Theme.Typo.listStrong)
                             .frame(width: 90, alignment: .leading)
                         Text("\(module.lineCount) 行").font(Theme.Typo.micro)
@@ -245,7 +245,7 @@ struct ArchMapView: View {
                         Text("throws \(module.robustness.throwingFunctions) · catch \(module.robustness.catchBlocks)")
                             .font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                     }
-                    .padding(.vertical, 3)
+                    .padding(.vertical, Theme.Space.textLine)
                 }
             }
         }
@@ -259,7 +259,7 @@ struct ArchMapView: View {
                     .font(Theme.Typo.list).foregroundStyle(Theme.faint)
             } else {
                 ForEach(state.runtimeOps) { op in
-                    HStack(spacing: 10) {
+                    HStack(spacing: Theme.Space.inline) {
                         Text(op.kind).font(Theme.Typo.listStrong)
                             .frame(width: 100, alignment: .leading)
                         Text("\(op.count) 次").font(Theme.Typo.hint)
@@ -276,7 +276,7 @@ struct ArchMapView: View {
                         }
                         Spacer()
                     }
-                    .padding(.vertical, 3)
+                    .padding(.vertical, Theme.Space.textLine)
                 }
             }
         }
@@ -299,10 +299,10 @@ struct ArchMapView: View {
                     ForEach(Array(state.archRisks.prefix(isSnapshotting ? 6 : 20).enumerated()),
                             id: \.element.id) { index, risk in
                         if index > 0 { Divider() }
-                        HStack(spacing: 10) {
+                        HStack(spacing: Theme.Space.inline) {
                             Text("\(index + 1)").font(Theme.Typo.mono)
                                 .foregroundStyle(Theme.faint).frame(width: 18)
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                                 Text(risk.name).font(Theme.Typo.listStrong)
                                 Text(risk.explanation).font(Theme.Typo.micro)
                                     .foregroundStyle(.secondary)
@@ -319,7 +319,7 @@ struct ArchMapView: View {
                                                  : (risk.risk >= 8 ? .orange : .secondary))
                                 .frame(width: 36, alignment: .trailing)
                         }
-                        .padding(.vertical, 5)
+                        .padding(.vertical, Theme.Space.tight)
                     }
                 }
             }
@@ -331,8 +331,8 @@ struct ArchMapView: View {
     private func moduleDetail(_ module: Module, model: ArchModel) -> some View {
         Card(title: "模块详情 · \(module.name)",
              hint: module.path) {
-            HStack(alignment: .top, spacing: 20) {
-                VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top, spacing: Theme.Space.page) {
+                VStack(alignment: .leading, spacing: Theme.Space.tight) {
                     Text("依赖（\(model.fanOut(module.id))）")
                         .font(Theme.Typo.hintStrong).foregroundStyle(.secondary)
                     ForEach(model.edges.filter { $0.from == module.id }, id: \.to) { edge in
@@ -340,7 +340,7 @@ struct ArchMapView: View {
                             .font(Theme.Typo.hint)
                     }
                 }
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Space.tight) {
                     Text("被依赖（\(model.fanIn(module.id))）")
                         .font(Theme.Typo.hintStrong).foregroundStyle(.secondary)
                     ForEach(model.edges.filter { $0.to == module.id }, id: \.from) { edge in
@@ -348,7 +348,7 @@ struct ArchMapView: View {
                             .font(Theme.Typo.hint)
                     }
                 }
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Space.tight) {
                     Text("文件（\(module.fileCount)）")
                         .font(Theme.Typo.hintStrong).foregroundStyle(.secondary)
                     ForEach(module.files.prefix(12)) { file in

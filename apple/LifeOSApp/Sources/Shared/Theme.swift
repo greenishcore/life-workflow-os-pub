@@ -13,8 +13,8 @@ import UIKit
 /// 增强对比度、以及各平台自己的观感规范都自动跟随。
 enum Theme {
     static let cardRadius: CGFloat = 10
-    static let pad = Space.xl
-    static let gap = Space.lg
+    static let pad = Space.card
+    static let gap = Space.block
 
     static let accent = Color.accentColor
     static let faint = Color.secondary.opacity(0.7)
@@ -120,19 +120,48 @@ extension Theme {
         static let display = Font.system(size: 22)
     }
 
-    /// 间距刻度。
+    /// 间距刻度。**是从全仓实际用法里量出来的，不是拍脑袋定的。**
     ///
-    /// 只收录了目前**已经在用且占绝大多数**的六档；仓库里还散着一批
-    /// 1 / 3 / 5 / 7 / 9 / 11 / 18 pt 的取值，刻意没有强行归并——
-    /// 把它们对齐到刻度会改变布局，那是设计决策，不该混在重构里。
-    /// 这批位置由 `ui-spacing-tokens` 约束列出来，作为接手方的规范化清单。
+    /// 统计结果：纵向（`VStack(spacing:)`）用 2 / 4；横向（`HStack(spacing:)`）
+    /// 用 6 / 10 / 14 这条 4pt 阶梯；容器内边距用 8 / 12 / 16 / 20。
+    ///
+    /// 按**用途**命名而不是 xs / sm / md：这实际是一把 2pt 的梯子，
+    /// 用 t 恤尺码命名只会退化成「给数字换个名字」，说不清 6 和 8 该用哪个。
+    ///
+    /// 历史教训：这把刻度第一版只收了 2/4/8/12/16/20，是从「已经在用的取值」里
+    /// 挑的——但挑的时候只统计了恰好落在预设值上的那些，属于循环论证，
+    /// 结果把 6/10/14 这条完整的横向阶梯整个漏掉，让约束误报了 39 处。
     enum Space {
-        static let xs: CGFloat = 2
-        static let sm: CGFloat = 4
-        static let md: CGFloat = 8
-        static let lg: CGFloat = 12
-        static let xl: CGFloat = 16
-        static let xxl: CGFloat = 20
+        /// 2 — 同一组内两行文字之间
+        static let textLine: CGFloat = 2
+        /// 4 — 紧凑元素之间
+        static let tight: CGFloat = 4
+        /// 6 — 行内小元素（徽章、标签）之间
+        static let inlineTight: CGFloat = 6
+        /// 8 — 最常用：小容器内边距、一般间隙
+        static let base: CGFloat = 8
+        /// 10 — 行内中等元素之间
+        static let inline: CGFloat = 10
+        /// 12 — 卡片之间
+        static let block: CGFloat = 12
+        /// 14 — 行内宽间隔（并列的信息组）
+        static let inlineWide: CGFloat = 14
+        /// 16 — 卡片内边距
+        static let card: CGFloat = 16
+        /// 20 — 页面内边距
+        static let page: CGFloat = 20
+    }
+
+    /// **不是设计间距**，是为了让开系统控件或绘图区而留的固定量。
+    ///
+    /// 单独放一处，是因为把它们混进 `Space` 会有两个坏处：
+    /// 既会被「间距应落在刻度上」的约束误报，
+    /// 也会让接手方以为调这两个数属于调间距——它们各自跟着别的东西走。
+    enum Layout {
+        /// iOS 底部标签栏的高度余量：浮层提示要浮在它上面，不是设计间距
+        static let tabBarClearance: CGFloat = 60
+        /// 图表绘图区右侧留白：给最后一个刻度标签让位，跟着 `Typo.axis` 走
+        static let chartTrailingInset: CGFloat = 18
     }
 }
 
@@ -172,9 +201,9 @@ struct Card<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Theme.Space.inline) {
             if !title.isEmpty {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.base) {
                     Text(title).font(Theme.Typo.cardTitle)
                     if !hint.isEmpty {
                         Text(hint).font(Theme.Typo.hint).foregroundStyle(Theme.faint)
@@ -202,7 +231,7 @@ struct StatTile: View {
     var color: Color?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Theme.Space.textLine) {
             Text(value)
                 .font(Theme.Typo.metric)
                 .foregroundStyle(color ?? .primary)
@@ -227,8 +256,8 @@ struct Badge: View {
     var body: some View {
         Text(text)
             .font(Theme.Typo.hint)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 2)
+            .padding(.horizontal, Theme.Space.base)
+            .padding(.vertical, Theme.Space.textLine)
             .foregroundStyle(filled ? .white : color)
             .background(filled ? color : color.opacity(0.15),
                         in: RoundedRectangle(cornerRadius: 5))
@@ -240,8 +269,8 @@ struct TagChip: View {
     var body: some View {
         Text("#\(text)")
             .font(Theme.Typo.hint)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 1)
+            .padding(.horizontal, Theme.Space.inlineTight)
+            .padding(.vertical, Theme.Space.textLine)
             .foregroundStyle(Theme.accent)
             .background(Theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 4))
     }
@@ -255,12 +284,12 @@ struct PageHeader<Actions: View>: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                 Text(title).font(Theme.Typo.pageTitle)
                 Text(subtitle).font(Theme.Typo.list).foregroundStyle(.secondary)
             }
             Spacer(minLength: 12)
-            HStack(spacing: 8) { actions }
+            HStack(spacing: Theme.Space.base) { actions }
         }
     }
 }
@@ -274,7 +303,7 @@ struct EmptyStateView: View {
     var action: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Theme.Space.base) {
             Image(systemName: symbol)
                 .font(Theme.Typo.emptySymbol)
                 .foregroundStyle(Theme.faint)
@@ -288,11 +317,11 @@ struct EmptyStateView: View {
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
                     .buttonStyle(.borderedProminent)
-                    .padding(.top, 4)
+                    .padding(.top, Theme.Space.tight)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
+        .padding(Theme.Space.page)
     }
 }
 
@@ -327,7 +356,7 @@ struct PageScaffold<Actions: View, Content: View>: View {
             content
             if isSnapshotting { Spacer(minLength: 0) }
         }
-        .padding(20)
+        .padding(Theme.Space.page)
     }
 
     var body: some View {

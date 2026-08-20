@@ -68,7 +68,7 @@ struct SettingsView: View {
             }
 
             ForEach(state.conflictReports) { report in
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                     Text(report.message).font(.caption)
                     ForEach(report.archived, id: \.self) { url in
                         Text(url.lastPathComponent)
@@ -145,7 +145,7 @@ struct SettingsView: View {
             LabeledContent("记录总数", value: "\(state.items.count)")
             LabeledContent("思路注释", value: "\(state.summary.totalNotes)")
             if let url = vault.currentURL {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                     Text("vault 路径").font(.caption).foregroundStyle(.secondary)
                     Text(url.path).font(.caption2.monospaced())
                         .foregroundStyle(Theme.faint).textSelection(.enabled)

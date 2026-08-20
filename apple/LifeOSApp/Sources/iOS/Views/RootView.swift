@@ -36,9 +36,9 @@ struct RootView: View {
             if !state.statusMessage.isEmpty {
                 Text(state.statusMessage)
                     .font(.footnote)
-                    .padding(.horizontal, 14).padding(.vertical, 8)
+                    .padding(.horizontal, Theme.Space.inlineWide).padding(.vertical, Theme.Space.base)
                     .background(.ultraThinMaterial, in: Capsule())
-                    .padding(.bottom, 60)
+                    .padding(.bottom, Theme.Layout.tabBarClearance)
                     .transition(.opacity)
             }
         }

@@ -16,7 +16,7 @@ struct TodayView: View {
         NavigationStack {
             List {
                 Section {
-                    HStack(spacing: 10) {
+                    HStack(spacing: Theme.Space.inline) {
                         TextField("随手记一条…", text: $quickText, axis: .vertical)
                             .lineLimit(1...4)
                             .focused($quickFocused)
@@ -67,8 +67,8 @@ struct TodayView: View {
                 if !recentTrajectory.isEmpty {
                     Section("最近的思维轨迹") {
                         ForEach(Array(recentTrajectory.enumerated()), id: \.offset) { _, row in
-                            VStack(alignment: .leading, spacing: 3) {
-                                HStack(spacing: 6) {
+                            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
+                                HStack(spacing: Theme.Space.inlineTight) {
                                     Circle().fill(row.item.status.color).frame(width: 6, height: 6)
                                     Text(row.item.title).font(.caption).foregroundStyle(.secondary)
                                     Spacer()
@@ -76,7 +76,7 @@ struct TodayView: View {
                                 }
                                 Text(row.note).font(.callout)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, Theme.Space.textLine)
                         }
                     }
                 }
@@ -91,7 +91,7 @@ struct TodayView: View {
     }
 
     private func stat(_ value: String, _ label: String) -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: Theme.Space.textLine) {
             Text(value).font(.title3.bold())
             Text(label).font(.caption2).foregroundStyle(.secondary)
         }
@@ -121,8 +121,8 @@ struct IdeaRow: View {
     let item: Item
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: Theme.Space.tight) {
+            HStack(spacing: Theme.Space.inlineTight) {
                 Circle().fill(item.status.color).frame(width: 7, height: 7)
                 Text(item.title).font(.body).lineLimit(1)
                 Spacer()
@@ -131,7 +131,7 @@ struct IdeaRow: View {
                         .font(.caption).foregroundStyle(item.priority.color)
                 }
             }
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 Text(item.lastActivity).font(.caption2).foregroundStyle(Theme.faint)
                 if !item.thinkingNotes.isEmpty {
                     Label("\(item.thinkingNotes.count)", systemImage: "text.quote")
@@ -146,6 +146,6 @@ struct IdeaRow: View {
                 Spacer()
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, Theme.Space.textLine)
     }
 }

@@ -119,7 +119,7 @@ struct IdeaDetailView: View {
 
                     Section {
                         ForEach(binding.wrappedValue.thinkingNotes) { note in
-                            VStack(alignment: .leading, spacing: 3) {
+                            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                                 Text(note.t).font(.caption2).foregroundStyle(Theme.faint)
                                 Text(note.note).font(.callout)
                             }

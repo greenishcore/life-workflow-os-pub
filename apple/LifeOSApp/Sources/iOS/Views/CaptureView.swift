@@ -143,7 +143,7 @@ private struct CaptureLineRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Theme.Space.inline) {
             Button {
                 Task {
                     _ = try? await state.store.toggleCaptureLine(date: date, rawLine: raw)
@@ -155,7 +155,7 @@ private struct CaptureLineRow: View {
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                 Text(content)
                     .strikethrough(isDone)
                     .foregroundStyle(isDone ? Theme.faint : .primary)

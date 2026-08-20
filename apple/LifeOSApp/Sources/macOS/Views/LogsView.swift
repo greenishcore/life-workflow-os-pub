@@ -99,32 +99,32 @@ struct LogsView: View {
                 BarMark(x: .value("次数", entry.1), y: .value("项", entry.0))
                     .foregroundStyle(color)
                     .cornerRadius(3)
-                    .annotation(position: .trailing, spacing: 4) {
+                    .annotation(position: .trailing, spacing: Theme.Space.tight) {
                         Text("\(entry.1)").font(Theme.Typo.micro).foregroundStyle(.secondary)
                     }
             }
             .chartXAxis(.hidden)
             .chartYAxis { AxisMarks(position: .leading) { AxisValueLabel() } }
-            .chartPlotStyle { $0.padding(.trailing, 18) }
+            .chartPlotStyle { $0.padding(.trailing, Theme.Layout.chartTrailingInset) }
             .frame(height: max(140, CGFloat(entries.count) * 24))
         }
     }
 
     private var addCard: some View {
         Card(title: "记一次操作", hint: "跑完一次 agent 任务后，把过程与产出记下来") {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 TextField("这次做了什么（必填）", text: $objective)
                 Picker("", selection: $status) {
                     ForEach(RunLog.Status.allCases, id: \.self) { Text($0.label).tag($0) }
                 }.labelsHidden().frame(width: 80)
                 TextField("秒", value: $duration, format: .number).frame(width: 60)
             }
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 TextField("用到的工具，逗号分隔", text: $tools)
                 TextField("产出路径，逗号分隔", text: $outputs)
                 TextField("错误，逗号分隔", text: $errors)
             }
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 TextField("复盘备注：下次怎么做更好", text: $notes)
                 TextField("模型", text: $model).frame(width: 140)
                 Button("记录") { Task { await addLog() } }
@@ -179,10 +179,10 @@ struct LogsView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(state.proposals.enumerated()), id: \.element.id) { index, p in
                         if index > 0 { Divider() }
-                        HStack(alignment: .top, spacing: 10) {
+                        HStack(alignment: .top, spacing: Theme.Space.inline) {
                             Badge(text: p.kind.label,
                                   color: p.kind.isActionable ? Theme.accent : .orange)
-                            VStack(alignment: .leading, spacing: 3) {
+                            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                                 Text(p.title).font(Theme.Typo.cardTitle)
                                 Text(p.rationale).font(Theme.Typo.hint)
                                     .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -198,7 +198,7 @@ struct LogsView: View {
                                     .controlSize(.small)
                             }
                         }
-                        .padding(.vertical, 7)
+                        .padding(.vertical, Theme.Space.base)
                     }
                 }
             }
@@ -214,9 +214,9 @@ struct LogsView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(state.skills.enumerated()), id: \.element.id) { index, skill in
                         if index > 0 { Divider() }
-                        HStack(spacing: 10) {
+                        HStack(spacing: Theme.Space.inline) {
                             Badge(text: skill.status.label, color: Color(hex: skill.status.colorHex))
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                                 Text(skill.name).font(Theme.Typo.cardTitle)
                                 if !skill.trigger.isEmpty {
                                     Text(skill.trigger).font(Theme.Typo.hint)
@@ -242,7 +242,7 @@ struct LogsView: View {
                                 .buttonStyle(.borderless)
                             }
                         }
-                        .padding(.vertical, 6)
+                        .padding(.vertical, Theme.Space.inlineTight)
                     }
                 }
             }
@@ -274,7 +274,7 @@ private struct LogRow: View {
     let log: RunLog
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: Theme.Space.inline) {
             Text(log.status.icon)
             Text(log.timestamp.prefix(16).replacingOccurrences(of: "T", with: " "))
                 .font(Theme.Typo.mono).foregroundStyle(Theme.faint)
@@ -285,6 +285,6 @@ private struct LogRow: View {
                 .font(Theme.Typo.hint).foregroundStyle(.secondary)
                 .frame(width: 130, alignment: .leading)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Theme.Space.tight)
     }
 }

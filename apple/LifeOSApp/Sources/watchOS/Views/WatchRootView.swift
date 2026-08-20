@@ -45,18 +45,18 @@ struct WatchOverviewView: View {
     var body: some View {
         List {
             Section {
-                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.md) {
+                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.base) {
                     Text("\(state.summary.total)")
                         .font(Theme.Typo.metric)
                         .foregroundStyle(Theme.accent)
-                    VStack(alignment: .leading, spacing: Theme.Space.xs) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                         Text("想法").font(Theme.Typo.list)
                         Text("推进中 \(state.summary.active) · 已完成 \(state.summary.done)")
                             .font(Theme.Typo.micro)
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.vertical, Theme.Space.xs)
+                .padding(.vertical, Theme.Space.textLine)
             }
 
             Section {
@@ -91,7 +91,7 @@ struct WatchStatRow: View {
     var body: some View {
         HStack {
             Text(label).font(Theme.Typo.list)
-            Spacer(minLength: Theme.Space.sm)
+            Spacer(minLength: Theme.Space.tight)
             Text(value).font(Theme.Typo.metricSmall)
             if !hint.isEmpty {
                 Text(hint).font(Theme.Typo.micro).foregroundStyle(Theme.faint)
@@ -132,9 +132,9 @@ struct WatchIdeaRow: View {
     let item: Item
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.xs) {
+        VStack(alignment: .leading, spacing: Theme.Space.textLine) {
             Text(item.title).font(Theme.Typo.list).lineLimit(2)
-            HStack(spacing: Theme.Space.sm) {
+            HStack(spacing: Theme.Space.tight) {
                 Badge(text: item.status.label, color: item.status.color)
                 if let progress = item.progress, progress > 0 {
                     Text("\(progress)%").font(Theme.Typo.micro)
@@ -146,7 +146,7 @@ struct WatchIdeaRow: View {
                     .foregroundStyle(Theme.faint)
             }
         }
-        .padding(.vertical, Theme.Space.xs)
+        .padding(.vertical, Theme.Space.textLine)
     }
 }
 
@@ -161,9 +161,9 @@ struct WatchIdeaDetailView: View {
     var body: some View {
         List {
             Section {
-                VStack(alignment: .leading, spacing: Theme.Space.sm) {
+                VStack(alignment: .leading, spacing: Theme.Space.tight) {
                     Text(item.title).font(Theme.Typo.cardTitle)
-                    HStack(spacing: Theme.Space.sm) {
+                    HStack(spacing: Theme.Space.tight) {
                         Badge(text: item.status.label, color: item.status.color)
                         Badge(text: item.priority.label, color: item.priority.color)
                     }
@@ -172,7 +172,7 @@ struct WatchIdeaDetailView: View {
                             .tint(item.status.color)
                     }
                 }
-                .padding(.vertical, Theme.Space.xs)
+                .padding(.vertical, Theme.Space.textLine)
             }
 
             if item.thinkingNotes.isEmpty {
@@ -183,18 +183,18 @@ struct WatchIdeaDetailView: View {
             } else {
                 Section("思路轨迹") {
                     ForEach(Array(item.thinkingNotes.enumerated()), id: \.offset) { _, note in
-                        VStack(alignment: .leading, spacing: Theme.Space.xs) {
+                        VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                             Text(note.t).font(Theme.Typo.micro).foregroundStyle(Theme.faint)
                             Text(note.note).font(Theme.Typo.list)
                         }
-                        .padding(.vertical, Theme.Space.xs)
+                        .padding(.vertical, Theme.Space.textLine)
                     }
                 }
             }
 
             if !item.tags.isEmpty {
                 Section {
-                    HStack(spacing: Theme.Space.sm) {
+                    HStack(spacing: Theme.Space.tight) {
                         ForEach(item.tags.prefix(3), id: \.self) { TagChip(text: $0) }
                     }
                 }

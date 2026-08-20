@@ -470,325 +470,11 @@
     },
     {
       "id" : "ui-spacing-tokens",
-      "rationale" : "这条是**给接手方的规范化清单**，不是门禁。列出的是不在档位上的取值（1/3/5/7/9/11/18pt 这类）——把它们对齐到刻度会改变布局，那是设计决策，不该由重构顺手决定。另有 72 处虽是裸数字但已在档位上，属机械替换，未计入",
-      "severity" : "advisory",
-      "title" : "间距应落在 Theme.Space 的档位上",
+      "rationale" : "刻度已按全仓实际用法校准（纵向 2/4、横向 6/10/14、容器 8/12/16/20），存量 63 处已全部归并，因此从「参考」提升为门禁——留着零违例的参考项没有意义。让开系统控件与图表绘图区的固定量在 `Theme.Layout` 里，不受此约束管。另有 9 处裸数字虽已在档位上但没走令牌，属机械替换，不阻断",
+      "severity" : "blocking",
+      "title" : "间距必须落在 Theme.Space 的档位上",
       "violations" : [
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/CaptureView.swift",
-          "line" : 146
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/IdeasView.swift",
-          "line" : 122
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/RootView.swift",
-          "line" : 39
-        },
-        {
-          "detail" : "间距 60pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/RootView.swift",
-          "line" : 41
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/SettingsView.swift",
-          "line" : 71
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift",
-          "line" : 19
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift",
-          "line" : 70
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift",
-          "line" : 71
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift",
-          "line" : 125
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 95
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 101
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 102
-        },
-        {
-          "detail" : "间距 7pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 119
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 133
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 170
-        },
-        {
-          "detail" : "间距 5pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 195
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 211
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 229
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 248
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 262
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 279
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 302
-        },
-        {
-          "detail" : "间距 5pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
-          "line" : 322
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
-          "line" : 40
-        },
-        {
-          "detail" : "间距 1pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
-          "line" : 67
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
-          "line" : 135
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
-          "line" : 146
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/CaptureView.swift",
-          "line" : 40
-        },
-        {
-          "detail" : "间距 11pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/CaptureView.swift",
-          "line" : 49
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ConvertView.swift",
-          "line" : 79
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ConvertView.swift",
-          "line" : 136
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/ConvertView.swift",
-          "line" : 138
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
-          "line" : 115
-        },
-        {
-          "detail" : "间距 18pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
-          "line" : 173
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
-          "line" : 195
-        },
-        {
-          "detail" : "间距 5pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
-          "line" : 201
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
-          "line" : 212
-        },
-        {
-          "detail" : "间距 7pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 56
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 59
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 133
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 206
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 209
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 236
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 324
-        },
-        {
-          "detail" : "间距 9pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 392
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 393
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 394
-        },
-        {
-          "detail" : "间距 5pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 400
-        },
-        {
-          "detail" : "间距 5pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
-          "line" : 416
-        },
-        {
-          "detail" : "间距 18pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 108
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 182
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 185
-        },
-        {
-          "detail" : "间距 7pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 201
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 217
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 245
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
-          "line" : 277
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/RootView.swift",
-          "line" : 42
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/RootView.swift",
-          "line" : 93
-        },
-        {
-          "detail" : "间距 6pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/RootView.swift",
-          "line" : 94
-        },
-        {
-          "detail" : "间距 3pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift",
-          "line" : 128
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift",
-          "line" : 140
-        },
-        {
-          "detail" : "间距 14pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift",
-          "line" : 150
-        },
-        {
-          "detail" : "间距 10pt 不在 Theme.Space 的档位上",
-          "file" : "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift",
-          "line" : 178
-        }
+
       ]
     },
     {
@@ -1644,7 +1330,7 @@
             "SwiftUI",
             "UIKit"
           ],
-          "lines" : 260,
+          "lines" : 267,
           "path" : "apple/LifeOSApp/Sources/Shared/Theme.swift",
           "platformGates" : [
             "macOS",
@@ -1707,7 +1393,7 @@
             "LifeWorkflowKit",
             "SwiftUI"
           ],
-          "lines" : 153,
+          "lines" : 170,
           "path" : "apple/LifeOSApp/Sources/watchOS/Views/WatchRootView.swift",
           "platformGates" : [
 
@@ -1743,7 +1429,7 @@
           "imports" : [
             "Foundation"
           ],
-          "lines" : 328,
+          "lines" : 327,
           "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/ArchExtractor.swift",
           "platformGates" : [
 

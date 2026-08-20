@@ -91,7 +91,7 @@ struct DashboardView: View {
                             PointMark(x: .value("时间", begin), y: .value("精力", line.energy))
                                 .symbolSize(Double(line.priority.weight) * 9)
                                 .foregroundStyle(line.status.color)
-                                .annotation(position: .top, spacing: 2) {
+                                .annotation(position: .top, spacing: Theme.Space.textLine) {
                                     if line.priority == .high {
                                         Text(line.title)
                                             .font(Theme.Typo.axis)
@@ -112,9 +112,9 @@ struct DashboardView: View {
                 .chartXAxis { AxisMarks(preset: .aligned) }
                 .frame(height: 230)
 
-                HStack(spacing: 14) {
+                HStack(spacing: Theme.Space.inlineWide) {
                     ForEach(Status.allCases, id: \.self) { s in
-                        HStack(spacing: 4) {
+                        HStack(spacing: Theme.Space.tight) {
                             Circle().fill(s.color).frame(width: 7, height: 7)
                             Text(s.label).font(Theme.Typo.hint).foregroundStyle(.secondary)
                         }
@@ -160,7 +160,7 @@ struct DashboardView: View {
                             y: .value("标签", entry.tag))
                         .foregroundStyle(Theme.accent)
                         .cornerRadius(3)
-                        .annotation(position: .trailing, spacing: 4) {
+                        .annotation(position: .trailing, spacing: Theme.Space.tight) {
                             Text("\(entry.count)").font(Theme.Typo.micro)
                                 .foregroundStyle(.secondary)
                         }
@@ -170,7 +170,7 @@ struct DashboardView: View {
                     // 标签放左侧轴上，否则会压在条形上
                     AxisMarks(position: .leading) { AxisValueLabel() }
                 }
-                .chartPlotStyle { $0.padding(.trailing, 18) }
+                .chartPlotStyle { $0.padding(.trailing, Theme.Layout.chartTrailingInset) }
                 .frame(height: max(150, CGFloat(tags.count) * 22))
             }
         }
@@ -192,13 +192,13 @@ struct DashboardView: View {
                         Button {
                             state.open(row.item)
                         } label: {
-                            HStack(alignment: .top, spacing: 10) {
+                            HStack(alignment: .top, spacing: Theme.Space.inline) {
                                 Text(row.date)
                                     .font(Theme.Typo.mono)
                                     .foregroundStyle(Theme.faint)
                                     .frame(width: 74, alignment: .leading)
                                 Circle().fill(row.item.status.color)
-                                    .frame(width: 7, height: 7).padding(.top, 5)
+                                    .frame(width: 7, height: 7).padding(.top, Theme.Space.tight)
                                 Text(row.item.title)
                                     .font(Theme.Typo.list)
                                     .foregroundStyle(.secondary)
@@ -209,7 +209,7 @@ struct DashboardView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .multilineTextAlignment(.leading)
                             }
-                            .padding(.vertical, 6)
+                            .padding(.vertical, Theme.Space.inlineTight)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)

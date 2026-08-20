@@ -29,7 +29,7 @@ struct PromptsView: View {
                 TextEditor(text: $raw)
                     .font(Theme.Typo.body)
                     .frame(height: 110)
-                    .padding(4)
+                    .padding(Theme.Space.tight)
                     .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.border))
 
@@ -53,7 +53,7 @@ struct PromptsView: View {
                 if state.promptHistory.isEmpty {
                     Text("还没有生成过").font(Theme.Typo.list).foregroundStyle(Theme.faint)
                 } else if isSnapshotting {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Theme.Space.tight) {
                         ForEach(state.promptHistory.prefix(8), id: \.self) { url in
                             Text(url.deletingPathExtension().lastPathComponent)
                                 .font(Theme.Typo.mono)
@@ -73,7 +73,7 @@ struct PromptsView: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(16)
+        .padding(Theme.Space.card)
     }
 
     private var rightPane: some View {
@@ -82,7 +82,7 @@ struct PromptsView: View {
                 TextEditor(text: $content)
                     .font(Theme.Typo.monoList)
                     .frame(minHeight: 420)
-                    .padding(4)
+                    .padding(Theme.Space.tight)
                     .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.border))
 
@@ -106,7 +106,7 @@ struct PromptsView: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(16)
+        .padding(Theme.Space.card)
     }
 
     // MARK: 动作

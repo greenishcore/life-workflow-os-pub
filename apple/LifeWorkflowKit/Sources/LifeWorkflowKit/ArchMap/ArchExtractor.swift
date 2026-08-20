@@ -241,9 +241,16 @@ public enum ArchExtractor {
         path.hasSuffix("Sources/Shared/Theme.swift")
     }
 
-    /// 已收录进 `Theme.Space` 的档位。用这些数字只是「还没换成令牌」，机械替换即可；
-    /// 其它数字要先决定归到哪一档，那是设计决策。
-    static let spacingScale: Set<Int> = [0, 2, 4, 8, 12, 16, 20]
+    /// 已收录进 `Theme.Space` 的档位。
+    ///
+    /// **这把刻度改过一次，教训值得记着。** 第一版是 `[0,2,4,8,12,16,20]`，
+    /// 从「已经在用的取值」里挑的——但挑的时候只统计了恰好落在预设值上的那些，
+    /// 属于循环论证。结果 6/10/14 这条完整的横向阶梯（`HStack(spacing:)` 用的，
+    /// 共 37 处）被整个判成违例，接手方照那份清单去改会把好东西改坏。
+    ///
+    /// 现在这一版是把全仓间距按**用法**归类后得出的：纵向 2/4，横向 6/10/14，
+    /// 容器 8/12/16/20。改这把刻度前，先去数一遍真实用法。
+    static let spacingScale: Set<Int> = [0, 2, 4, 6, 8, 10, 12, 14, 16, 20]
 
     static func uiHandoffInvariants(
         scanned: [(file: SourceFile, code: String, moduleID: String?)]
@@ -266,7 +273,9 @@ public enum ArchExtractor {
                         detail: "写死字号，应改用 Theme.Typo 的令牌"))
                 }
 
-                if inDesignSurface {
+                // Theme.Layout 里的固定量（让开标签栏、图表绘图区留白）不是设计间距，
+                // 它们各自跟着别的东西走，混进来只会制造噪音
+                if inDesignSurface, !text.contains("Layout.") {
                     for value in spacingLiterals(in: text) {
                         if spacingScale.contains(value) {
                             onScaleCount += 1
@@ -296,12 +305,11 @@ public enum ArchExtractor {
                 violations: typography),
             Invariant(
                 id: "ui-spacing-tokens",
-                title: "间距应落在 Theme.Space 的档位上",
-                rationale: "这条是**给接手方的规范化清单**，不是门禁。列出的是不在档位上的取值"
-                    + "（1/3/5/7/9/11/18pt 这类）——把它们对齐到刻度会改变布局，"
-                    + "那是设计决策，不该由重构顺手决定。"
-                    + "另有 \(onScaleCount) 处虽是裸数字但已在档位上，属机械替换，未计入",
-                severity: .advisory,
+                title: "间距必须落在 Theme.Space 的档位上",
+                rationale: "刻度已按全仓实际用法校准（纵向 2/4、横向 6/10/14、容器 8/12/16/20），"
+                    + "存量 63 处已全部归并，因此从「参考」提升为门禁——留着零违例的参考项没有意义。"
+                    + "让开系统控件与图表绘图区的固定量在 `Theme.Layout` 里，不受此约束管。"
+                    + "另有 \(onScaleCount) 处裸数字虽已在档位上但没走令牌，属机械替换，不阻断",
                 violations: offScaleSpacing),
             Invariant(
                 id: "ui-no-services",

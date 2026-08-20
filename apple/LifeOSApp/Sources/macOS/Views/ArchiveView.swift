@@ -37,7 +37,7 @@ struct ArchiveView: View {
                       systemImage: "exclamationmark.triangle")
                     .font(Theme.Typo.list).foregroundStyle(.orange)
             } else {
-                HStack(spacing: 14) {
+                HStack(spacing: Theme.Space.inlineWide) {
                     Label(state.gitStatus.branch, systemImage: "arrow.triangle.branch")
                     if state.gitStatus.ahead > 0 || state.gitStatus.behind > 0 {
                         Label("领先 \(state.gitStatus.ahead) / 落后 \(state.gitStatus.behind)",
@@ -64,7 +64,7 @@ struct ArchiveView: View {
                 }
                 if !state.gitStatus.changed.isEmpty {
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 1) {
+                        VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                             ForEach(Array(state.gitStatus.changed.prefix(60).enumerated()),
                                     id: \.offset) { _, line in
                                 Text(line).font(Theme.Typo.mono)
@@ -73,7 +73,7 @@ struct ArchiveView: View {
                         }
                     }
                     .frame(height: 110)
-                    .padding(8)
+                    .padding(Theme.Space.base)
                     .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
                 }
             }
@@ -82,7 +82,7 @@ struct ArchiveView: View {
 
     private var commitCard: some View {
         Card(title: "提交并推送", hint: "留空则用「auto: 日期 工作流同步」") {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 TextField("commit 说明", text: $message)
                 Button("只提交") { commit(push: false) }
                     .disabled(!state.gitStatus.isRepo || state.isGitBusy)
@@ -93,7 +93,7 @@ struct ArchiveView: View {
             }
             if !state.gitLog.isEmpty {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                         ForEach(Array(state.gitLog.enumerated()), id: \.offset) { _, line in
                             Text(line).font(Theme.Typo.mono)
                                 .foregroundStyle(.secondary)
@@ -103,7 +103,7 @@ struct ArchiveView: View {
                     }
                 }
                 .frame(height: 110)
-                .padding(8)
+                .padding(Theme.Space.base)
                 .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
             }
         }
@@ -111,7 +111,7 @@ struct ArchiveView: View {
 
     private var releaseCard: some View {
         Card(title: "里程碑发布", hint: "语义化版本 vX.Y.Z，需要 gh CLI 已登录") {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 TextField("v0.2.0", text: $version).frame(width: 110)
                 TextField("本阶段成果 + 下阶段计划", text: $notes)
                 Button("打 tag 并发布") { publish() }
@@ -132,7 +132,7 @@ struct ArchiveView: View {
                 VStack(spacing: 0) {
                     ForEach(isSnapshotting ? Array(state.gitHistory.prefix(8))
                                            : state.gitHistory) { commit in
-                        HStack(spacing: 10) {
+                        HStack(spacing: Theme.Space.inline) {
                             Text(commit.hash)
                                 .font(Theme.Typo.mono)
                                 .foregroundStyle(Theme.accent)
@@ -143,7 +143,7 @@ struct ArchiveView: View {
                                 .font(Theme.Typo.list).lineLimit(1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.vertical, 3)
+                        .padding(.vertical, Theme.Space.textLine)
                         Divider()
                     }
                 }

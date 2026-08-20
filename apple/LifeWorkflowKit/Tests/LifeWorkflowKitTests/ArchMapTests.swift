@@ -139,11 +139,12 @@ struct ArchExtractorTests {
     func blockingInvariantsAreDeliberate() throws {
         let model = try ArchExtractor.extract(repoRoot: Self.repo).model
         let blocking = Set(model.invariants.filter { $0.severity == .blocking }.map(\.id))
-        #expect(blocking == ["kit-no-ui", "ui-typography-tokens", "ui-no-services"],
+        #expect(blocking == ["kit-no-ui", "ui-typography-tokens", "ui-no-services",
+                             "ui-spacing-tokens"],
                 "硬约束实际是 \(blocking.sorted())")
         let advisory = Set(model.invariants.filter { $0.severity == .advisory }.map(\.id))
         #expect(advisory == ["downward-only", "ui-targets-isolated", "subprocess-macos-only",
-                             "kit-modules-tested", "ui-spacing-tokens"])
+                             "kit-modules-tested"])
     }
 
     // MARK: 界面交接护栏
@@ -190,7 +191,7 @@ struct ArchExtractorTests {
             (file, "VStack(spacing: 3) {", nil),        // 不在档位上，报
             (file, ".padding(Theme.pad)", nil),         // 用了令牌，不报
         ]).first { $0.id == "ui-spacing-tokens" })
-        #expect(rule.severity == .advisory, "这条是清单不是门禁")
+        #expect(rule.severity == .blocking, "存量归并完之后已提升为门禁")
         #expect(rule.violations.count == 2, "实际：\(rule.violations.map(\.detail))")
     }
 

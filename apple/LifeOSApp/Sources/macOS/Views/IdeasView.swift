@@ -47,16 +47,16 @@ struct IdeasView: View {
     // MARK: 左：列表
 
     private var listPane: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Theme.Space.base) {
             HStack {
                 Image(systemName: "magnifyingglass").foregroundStyle(Theme.faint)
                 TextField("搜索标题 / 标签 / 思路注释 / 正文…", text: $search)
                     .textFieldStyle(.plain)
             }
-            .padding(7)
+            .padding(Theme.Space.base)
             .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 6))
 
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Space.inlineTight) {
                 Picker("", selection: $statusFilter) {
                     Text("全部状态").tag(Status?.none)
                     ForEach(Status.allCases, id: \.self) { Text($0.label).tag(Status?.some($0)) }
@@ -74,7 +74,7 @@ struct IdeasView: View {
                                hint: search.isEmpty ? "按 ⌘N 新建一条" : "换个关键词试试")
             } else if isSnapshotting {
                 // ImageRenderer 不渲染 List，快照时改用普通堆叠
-                VStack(spacing: 2) {
+                VStack(spacing: Theme.Space.textLine) {
                     ForEach(filtered.prefix(8)) { ItemRow(item: $0, selected: $0.id == selectedID) }
                     Spacer(minLength: 0)
                 }
@@ -96,7 +96,7 @@ struct IdeasView: View {
                 .keyboardShortcut("n", modifiers: .command)
             }
         }
-        .padding(12)
+        .padding(Theme.Space.block)
     }
 
     // MARK: 右：编辑器
@@ -109,7 +109,7 @@ struct IdeasView: View {
                     TextField("想法标题", text: binding.title)
                         .textFieldStyle(.plain)
                         .font(Theme.Typo.sectionTitle)
-                        .padding(8)
+                        .padding(Theme.Space.base)
                         .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 6))
                         .onChange(of: binding.wrappedValue.title) { _, _ in isDirty = true }
 
@@ -119,7 +119,7 @@ struct IdeasView: View {
                     bodyCard(binding)
                     actionsRow(binding)
                 }
-                .padding(16)
+                .padding(Theme.Space.card)
             }
         } else {
             EmptyStateView(symbol: "lightbulb", title: "还没有选中任何想法",
@@ -130,7 +130,7 @@ struct IdeasView: View {
 
     private func attributesCard(_ item: Binding<Item>) -> some View {
         Card(title: "属性") {
-            HStack(spacing: 14) {
+            HStack(spacing: Theme.Space.inlineWide) {
                 labeled("状态") {
                     Picker("", selection: item.status) {
                         ForEach(Status.allCases, id: \.self) { s in
@@ -151,7 +151,7 @@ struct IdeasView: View {
                 Spacer()
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: Theme.Space.card) {
                 labeled("精力") {
                     HStack {
                         Slider(value: Binding(
@@ -203,10 +203,10 @@ struct IdeasView: View {
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(item.wrappedValue.thinkingNotes.enumerated()), id: \.element.id) { index, note in
-                        HStack(alignment: .top, spacing: 10) {
+                        HStack(alignment: .top, spacing: Theme.Space.inline) {
                             // 时间轴：竖线 + 节点
                             VStack(spacing: 0) {
-                                Circle().fill(Theme.accent).frame(width: 6, height: 6).padding(.top, 6)
+                                Circle().fill(Theme.accent).frame(width: 6, height: 6).padding(.top, Theme.Space.inlineTight)
                                 if index < item.wrappedValue.thinkingNotes.count - 1 {
                                     Rectangle().fill(Theme.border).frame(width: 1)
                                 }
@@ -217,12 +217,12 @@ struct IdeasView: View {
                                 .font(Theme.Typo.mono)
                                 .foregroundStyle(Theme.faint)
                                 .frame(width: 72, alignment: .leading)
-                                .padding(.top, 2)
+                                .padding(.top, Theme.Space.textLine)
 
                             Text(note.note)
                                 .font(Theme.Typo.list)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 2)
+                                .padding(.top, Theme.Space.textLine)
 
                             Button {
                                 item.wrappedValue.thinkingNotes.removeAll { $0.id == note.id }
@@ -233,7 +233,7 @@ struct IdeasView: View {
                             .buttonStyle(.borderless)
                             .help("删除这条注释")
                         }
-                        .padding(.vertical, 3)
+                        .padding(.vertical, Theme.Space.textLine)
                     }
                 }
             }
@@ -258,7 +258,7 @@ struct IdeasView: View {
             ))
             .font(Theme.Typo.list)
             .frame(height: 64)
-            .padding(4)
+            .padding(Theme.Space.tight)
             .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.border))
         }
@@ -272,7 +272,7 @@ struct IdeasView: View {
             ))
             .font(Theme.Typo.monoList)
             .frame(minHeight: 150)
-            .padding(4)
+            .padding(Theme.Space.tight)
             .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.border))
         }
@@ -321,7 +321,7 @@ struct IdeasView: View {
     }
 
     private func labeled<V: View>(_ title: String, @ViewBuilder content: () -> V) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Theme.Space.inlineTight) {
             Text(title).font(Theme.Typo.list).foregroundStyle(.secondary)
             content()
         }
@@ -389,15 +389,15 @@ private struct ItemRow: View {
     let selected: Bool
 
     var body: some View {
-        HStack(spacing: 9) {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
+        HStack(spacing: Theme.Space.base) {
+            VStack(alignment: .leading, spacing: Theme.Space.textLine) {
+                HStack(spacing: Theme.Space.inlineTight) {
                     Circle().fill(item.status.color).frame(width: 7, height: 7)
                     Text(item.title)
                         .font(Theme.Typo.cardTitle)
                         .lineLimit(1)
                 }
-                HStack(spacing: 5) {
+                HStack(spacing: Theme.Space.tight) {
                     Text(item.lastActivity)
                         .font(Theme.Typo.mono)
                         .foregroundStyle(Theme.faint)
@@ -413,7 +413,7 @@ private struct ItemRow: View {
             if item.priority == .high { Badge(text: "高", color: item.priority.color) }
             ProgressRing(value: item.progress ?? 0)
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, Theme.Space.tight)
         .contentShape(Rectangle())
     }
 }
@@ -440,7 +440,7 @@ private struct AddNoteField: View {
     @State private var text = ""
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Space.base) {
             TextField("补一条思路…（回车添加，自动记今天的日期）", text: $text)
                 .onSubmit(add)
             Button("添加", action: add).disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)

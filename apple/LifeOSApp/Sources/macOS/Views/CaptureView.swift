@@ -37,7 +37,7 @@ struct CaptureView: View {
             TextEditor(text: $text)
                 .font(Theme.Typo.body)
                 .frame(minHeight: 110)
-                .padding(6)
+                .padding(Theme.Space.inlineTight)
                 .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.border))
                 .focused($editorFocused)
@@ -46,8 +46,8 @@ struct CaptureView: View {
                         Text("突然想到的点子、待办、一句灵感…")
                             .font(Theme.Typo.body)
                             .foregroundStyle(Theme.faint)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 12)
+                            .padding(.horizontal, Theme.Space.block)
+                            .padding(.vertical, Theme.Space.block)
                             .allowsHitTesting(false)
                     }
                 }
@@ -69,7 +69,7 @@ struct CaptureView: View {
 
     private var appleCard: some View {
         Card(title: "从 Apple 导入", hint: "写入当天 Daily 笔记的对应段落") {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 TextField("提醒事项列表名", text: $reminderList).frame(width: 150)
                 Toggle("含已完成", isOn: $includeDone)
                 Button("导入提醒") { Task { await importReminders() } }.disabled(busy)
@@ -88,7 +88,7 @@ struct CaptureView: View {
 
             if !log.isEmpty {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                         ForEach(Array(log.enumerated()), id: \.offset) { _, line in
                             Text(line)
                                 .font(Theme.Typo.mono)
@@ -99,7 +99,7 @@ struct CaptureView: View {
                     }
                 }
                 .frame(height: 84)
-                .padding(8)
+                .padding(Theme.Space.base)
                 .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
             }
         }
@@ -114,7 +114,7 @@ struct CaptureView: View {
                                hint: "在上面写一句话，⌘↩ 就能落到 Inbox/")
                     .frame(height: 130)
             } else {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Theme.Space.base) {
                     ForEach(captures, id: \.date) { group in
                         Text(group.date)
                             .font(Theme.Typo.hintStrong)
@@ -216,7 +216,7 @@ private struct CaptureRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Space.base) {
             Toggle("", isOn: Binding(
                 get: { isDone },
                 set: { _ in Task { await toggle() } }

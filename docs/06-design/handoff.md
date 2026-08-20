@@ -32,16 +32,17 @@
 cd apple/LifeWorkflowKit && swift run archmap-tool --repo ../.. --check
 ```
 
-违反硬约束时退出码非零。三条约束：
+违反硬约束时退出码非零。三条都是**硬门禁**，判据是「编译器管不了」：
+写死字号编得过、视图里跑 git 也编得过，代价要等到交接之后才显现。
 
-| id | 级别 | 判定 |
-|---|---|---|
-| `ui-typography-tokens` | **硬约束** | 视图里不得出现 `.font(.system(size:`，用 `Theme.Typo` 的令牌 |
-| `ui-no-services` | **硬约束** | 视图不得调用服务（`XxxService.` 后跟小写的成员，或 `EventKitBridge()`） |
-| `ui-spacing-tokens` | 参考 | 间距应落在 `Theme.Space` 的档位上——**这条是清单不是门禁** |
+| id | 判定 |
+|---|---|
+| `ui-typography-tokens` | 视图里不得出现 `.font(.system(size:`，用 `Theme.Typo` 的令牌 |
+| `ui-no-services` | 视图不得调用服务（`XxxService.` 后跟小写的成员，或 `EventKitBridge()`） |
+| `ui-spacing-tokens` | 间距必须落在 `Theme.Space` 的档位上 |
 
-前两条是硬门禁，判据是「编译器管不了」：写死字号编得过、视图里跑 git 也编得过，
-代价要等到交接之后才显现。
+`Theme.Layout` 里的固定量（让开标签栏、图表绘图区留白）不受间距门禁管——
+它们不是设计间距。
 
 `ConvertService.Target` 这类**嵌套类型引用是放行的**（选择器要用它渲染选项），
 判定只看点号后面是小写（方法/属性）还是大写（类型）。
@@ -164,10 +165,11 @@ bash tools/snapshot-sim.sh watch --compare
 
 ## 已知的、留给你的活
 
-1. **约 60 处间距不在刻度上**（1/3/5/6/7/9/10/11/14/18/60pt）。
-   `ui-spacing-tokens` 会列出 file:line。归并会改布局，所以留给你按新设计决定。
-2. **`pageTitle` / `sectionTitle` / `sidebarTitle` 还是固定字号**，
+1. **`pageTitle` / `sectionTitle` / `sidebarTitle` 还是固定字号**，
    因为语义档位（17 / 22）都会明显改变现有层级。
-3. **iOS 视图未迁到令牌**（见上）。watchOS 视图已经全用令牌，可作样板。
+2. **iOS 视图的字体未迁到令牌**——它们用 `.font(.caption)` 这类语义字体（15 处），
+   没有写死字号。统一会改变 iOS 观感（`.caption` 是 12pt，`Typo.micro` 是 13pt）。
+   watchOS 视图已经全用令牌，可作样板。间距三端都已统一。
+3. **`body` 与 `list` 在 watchOS 上都是 16**，手表上区分不开（见上）。
 4. **手表端的数据同步没实现**——界面能设计，但拿不到真数据（见上）。
 5. **Python 桌面版（`lifeos/gui/`）完全不在这套系统里**，它有自己的 QSS 调色板。

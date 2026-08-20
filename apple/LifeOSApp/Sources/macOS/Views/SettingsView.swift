@@ -60,7 +60,7 @@ struct SettingsView: View {
                 Text("最近一次处理结果").font(Theme.Typo.hintStrong)
                     .foregroundStyle(.secondary)
                 ForEach(state.conflictReports) { report in
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                         Text(report.message).font(Theme.Typo.hint)
                         ForEach(report.archived, id: \.self) { url in
                             Button {
@@ -72,7 +72,7 @@ struct SettingsView: View {
                             .buttonStyle(.link)
                         }
                     }
-                    .padding(.vertical, 2)
+                    .padding(.vertical, Theme.Space.textLine)
                 }
             }
         }
@@ -84,10 +84,10 @@ struct SettingsView: View {
         Card(title: "知识库位置",
              hint: "复合 vault：想法/日记可放 iCloud（手机能看到），隐私与大体积内容留本地") {
             ForEach(Array(roots.enumerated()), id: \.offset) { index, root in
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Space.base) {
                     Image(systemName: root.needsCoordination ? "icloud" : "internaldrive")
                         .foregroundStyle(root.needsCoordination ? Theme.accent : .secondary)
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                         Text(root.displayName).font(Theme.Typo.listStrong)
                         Text(root.path).font(Theme.Typo.mono)
                             .foregroundStyle(Theme.faint).textSelection(.enabled)
@@ -110,7 +110,7 @@ struct SettingsView: View {
                         .help("移除这个根")
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, Theme.Space.tight)
                 if index < roots.count - 1 { Divider() }
             }
 
@@ -125,7 +125,7 @@ struct SettingsView: View {
             }
 
             if !state.warnings.isEmpty {
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                     ForEach(Array(state.warnings.enumerated()), id: \.offset) { _, w in
                         Label(w.message, systemImage: "exclamationmark.triangle")
                             .font(Theme.Typo.hint).foregroundStyle(.orange)
@@ -137,7 +137,7 @@ struct SettingsView: View {
 
     private var appleCard: some View {
         Card(title: "Apple 默认值", hint: "捕捉页导入时的默认列表 / 日历名") {
-            HStack(spacing: 14) {
+            HStack(spacing: Theme.Space.inlineWide) {
                 HStack { Text("提醒事项列表").font(Theme.Typo.list); TextField("", text: $reminderList) }
                 HStack { Text("日历名").font(Theme.Typo.list); TextField("", text: $calendarName) }
             }
@@ -147,7 +147,7 @@ struct SettingsView: View {
     private var llmCard: some View {
         Card(title: "提示词重写用的 LLM",
              hint: "OpenAI 兼容接口；API Key 走环境变量 OPENAI_API_KEY，不落盘") {
-            HStack(spacing: 14) {
+            HStack(spacing: Theme.Space.inlineWide) {
                 HStack { Text("Base URL").font(Theme.Typo.list); TextField("", text: $baseURL) }
                 HStack { Text("模型").font(Theme.Typo.list); TextField("", text: $model).frame(width: 160) }
             }
@@ -175,7 +175,7 @@ struct SettingsView: View {
     }
 
     private func grid(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: Theme.Space.inline) {
             Text(label).font(Theme.Typo.hint).foregroundStyle(.secondary)
                 .frame(width: 80, alignment: .leading)
             Text(value).font(Theme.Typo.mono)

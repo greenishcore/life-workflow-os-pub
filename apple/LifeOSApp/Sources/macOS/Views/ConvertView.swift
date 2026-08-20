@@ -25,7 +25,7 @@ struct ConvertView: View {
         Card(title: "转换", hint: "支持把文件直接拖进虚线框") {
             dropZone
 
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Space.base) {
                 Text("目标格式").font(Theme.Typo.list).foregroundStyle(.secondary)
                 Picker("", selection: $target) {
                     ForEach(ConvertService.Target.allCases, id: \.self) {
@@ -44,7 +44,7 @@ struct ConvertView: View {
 
             if !state.convertLog.isEmpty {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Space.textLine) {
                         ForEach(Array(state.convertLog.enumerated()), id: \.offset) { _, line in
                             Text(line)
                                 .font(Theme.Typo.mono)
@@ -55,7 +55,7 @@ struct ConvertView: View {
                     }
                 }
                 .frame(height: 130)
-                .padding(8)
+                .padding(Theme.Space.base)
                 .background(Theme.pageBackground, in: RoundedRectangle(cornerRadius: 6))
             }
 
@@ -76,7 +76,7 @@ struct ConvertView: View {
     }
 
     private var dropZone: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: Theme.Space.inlineTight) {
             Image(systemName: source == nil ? "arrow.down.doc" : "doc.text")
                 .font(Theme.Typo.display)
                 .foregroundStyle(isDropTargeted ? Theme.accent : Theme.faint)
@@ -91,7 +91,7 @@ struct ConvertView: View {
             Button("选择文件…") { pick() }.controlSize(.small)
         }
         .frame(maxWidth: .infinity, minHeight: 96)
-        .padding(12)
+        .padding(Theme.Space.block)
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(isDropTargeted ? Theme.accent.opacity(0.08) : Color.clear)
@@ -133,9 +133,9 @@ struct ConvertView: View {
         Card(title: "依赖体检", hint: "缺哪个装哪个，不影响其它功能") {
             let tools = state.convertTools
             LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading),
-                                GridItem(.flexible(), alignment: .leading)], spacing: 6) {
+                                GridItem(.flexible(), alignment: .leading)], spacing: Theme.Space.inlineTight) {
                 ForEach(tools) { tool in
-                    HStack(spacing: 6) {
+                    HStack(spacing: Theme.Space.inlineTight) {
                         Image(systemName: tool.installed ? "checkmark.circle.fill" : "circle")
                             .foregroundStyle(tool.installed ? .green : Theme.faint)
                         Text(tool.name).font(Theme.Typo.hintMedium)
