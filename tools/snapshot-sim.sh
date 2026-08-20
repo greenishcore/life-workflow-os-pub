@@ -34,7 +34,8 @@ case "$platform" in
     # iOS 明暗两套都要看
     APPEARANCES=(light dark)
     PREFIX=ios
-    MIN_BYTES=40000
+    MIN_INK=0.01      # 实测：空白 0.0000，正常最简页 0.0526
+    SKIP_TOP=0.08     # 跳过状态栏（时钟每分钟变）
     ;;
   watch)
     SCHEME=LifeOS-watchOS
@@ -46,7 +47,8 @@ case "$platform" in
     # 表盘永远是黑底，所以只截暗色一套。
     APPEARANCES=(dark)
     PREFIX=watch
-    MIN_BYTES=15000
+    MIN_INK=0.05      # 表盘是黑底浅字，正常页在 0.6 以上
+    SKIP_TOP=0.15
     ;;
   *)
     echo "用法：bash tools/snapshot-sim.sh <ios|watch> [--baseline|--compare]" >&2
@@ -150,11 +152,13 @@ render() {
   xcrun simctl terminate "$DEV" "$BUNDLE_ID" >/dev/null 2>&1 || true
   [ "$platform" = "ios" ] && { xcrun simctl ui "$DEV" appearance light >/dev/null 2>&1 || true; }
 
+  # 用真实像素判断有没有渲染出来。**别用文件体积**——实测一张完全空白的
+  # iOS 截图有 74KB（状态栏、圆角、设备边框就压出这么多），比任何合理的
+  # 体积阈值都大，那种守卫等于不存在，而空白图一旦成了基线，后面全废。
   local suspicious=0
   for f in "$dest"/*.png; do
-    local size; size=$(stat -f%z "$f")
-    if [ "$size" -lt "$MIN_BYTES" ]; then
-      echo "  ⚠️  $(basename "$f") 只有 $((size/1024))KB，可能没渲染出来"
+    if ! python3 "$REPO/tools/pngink.py" "$f" --min "$MIN_INK" --skip-top "$SKIP_TOP" >/dev/null; then
+      echo "  ⚠️  $(basename "$f") 几乎没有内容，多半没渲染出来"
       suspicious=$((suspicious+1))
     fi
   done

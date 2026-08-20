@@ -23,8 +23,45 @@ LIFEOS_HOME = Path(os.environ.get("LIFEOS_HOME", Path.home() / "LifeWorkflowOS")
 #   seed/examples                          示例笔记   —— 只在 vault 还没有笔记时放一次
 SEED_ROOT = REPO_ROOT / "seed"
 
-CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "lifeos"
-CONFIG_FILE = CONFIG_HOME / "config.json"
+def _config_home() -> Path:
+    """配置目录：优先 `~/.config/lifeos`（与 Swift 版共用同一份），拿不到时退回
+    `~/Library/Application Support/LifeWorkflowOS`。
+
+    为什么要这个退路：`~/.config` 有可能不属于当前用户——某些工具用 sudo 安装时
+    会以 root 建出这个目录（实测遇到过 `~/.config/fish` 把整个 `~/.config` 变成
+    root:staff）。此时写配置会抛 PermissionError，「设置」页的保存就整个坏掉，
+    而用户往往不知道为什么。Swift 版本来就有这条退路，这里对齐。
+    """
+    preferred = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "lifeos"
+    try:
+        preferred.mkdir(parents=True, exist_ok=True)
+        # 目录存在不代表能写（root 建的目录对普通用户是 r-x）
+        probe = preferred / ".write-probe"
+        probe.touch()
+        probe.unlink()
+        return preferred
+    except OSError:
+        fallback = Path.home() / "Library/Application Support/LifeWorkflowOS"
+        try:
+            fallback.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            return preferred   # 两处都不行就让原来的错误照常抛出，别静默吞掉
+        return fallback
+
+
+def config_file() -> Path:
+    """配置文件路径。**每次现算**，不缓存成模块常量。
+
+    原因有二：一是 `XDG_CONFIG_HOME` 在导入之后才设也要生效；
+    二是模块常量会让单元测试读到用户的真实配置——`test_env_overrides_and_recomputes`
+    就因此挂过：它调 `Config.load()`，读到了开发机上真实存在的 config.json。
+    """
+    return _config_home() / "config.json"
+
+
+# 兼容既有引用（如设置页展示路径）。新代码请用 config_file()。
+CONFIG_HOME = _config_home()
+CONFIG_FILE = config_file()
 
 
 @dataclass
@@ -53,6 +90,9 @@ class Config:
 
     # 不落盘的运行期字段
     _source: str = field(default="default", repr=False, compare=False)
+    # 配置文件里我们不认识的键（Swift 版的 roots / logsPath 等）。
+    # 原样带着，保存时写回去——否则命令行存一次就会把应用端的复合 vault 配置抹掉。
+    _foreign: dict = field(default_factory=dict, repr=False, compare=False)
 
     # ---------- 派生路径 ----------
     def __post_init__(self) -> None:
@@ -97,14 +137,16 @@ class Config:
     @classmethod
     def load(cls) -> "Config":
         data, source = {}, "default"
-        if CONFIG_FILE.is_file():
+        path = config_file()
+        if path.is_file():
             try:
-                data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-                source = str(CONFIG_FILE)
+                data = json.loads(path.read_text(encoding="utf-8"))
+                source = str(path)
             except (OSError, json.JSONDecodeError):
                 data = {}
         known = {f.name for f in fields(cls) if not f.name.startswith("_")}
         cfg = cls(**{k: v for k, v in data.items() if k in known})
+        cfg._foreign = {k: v for k, v in data.items() if k not in known}
 
         # 环境变量优先（沿用既有脚本的 VAULT_DIR / LOG_DIR / PROMPT_DIR 等约定）
         env_map = (
@@ -136,12 +178,23 @@ class Config:
         return cfg
 
     def save(self) -> Path:
-        CONFIG_HOME.mkdir(parents=True, exist_ok=True)
+        path = config_file()
+        path.parent.mkdir(parents=True, exist_ok=True)   # _config_home 已挑好可写的那个
         data = {k: v for k, v in asdict(self).items() if not k.startswith("_")}
-        CONFIG_FILE.write_text(
+        # 先铺对方的字段，再让自己的覆盖同名项；这样 roots 之类的能原样留住，
+        # 而 vault_dir 这类双方都写的，以本次改动为准
+        merged = dict(self._foreign)
+        # Swift 用 roots 表达 vault；这边改了 vault_dir 就要让 roots 跟上，
+        # 否则应用端读 roots 会看到旧路径
+        if "roots" in merged:
+            merged["roots"] = [{"id": "local", "path": self.vault_dir, "folders": [],
+                                "needsCoordination": False, "displayName": "本地"}]
+        merged.update(data)
+        data = merged
+        path.write_text(
             json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
-        return CONFIG_FILE
+        return path
 
     def ensure_dirs(self) -> None:
         for p in (self.vault, self.logs, self.prompts, self.cache, self.skills):

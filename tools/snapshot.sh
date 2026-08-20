@@ -10,8 +10,9 @@
 # 比对刻意只做**逐字节**判断，不算像素差百分比：
 #   1. 目的是告诉你「该看哪几张图」，看图这件事你自己做得比任何相似度指标都准；
 #   2. 逐字节比对不需要任何图像库，仓库「零外部依赖、离线可用」的原则不用破例。
-# 顺带做一个体积下限检查——整页渲染失败会得到一张几乎全空的图，
-# 它压缩后极小，用体积就能抓到，同样不需要解码。
+# 另外用 tools/pngink.py 检查每页是否真的渲染出了内容。
+# **原先用的是「文件体积下限」，那个判据是错的**——实测一张完全空白的截图
+# 有 74KB，比阈值还大，守卫等于不存在。现在改成真数非背景像素。
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,7 +22,7 @@ OUT_ROOT="$REPO/.snapshots"
 FIXTURE="$REPO/.snap"
 CURRENT="$OUT_ROOT/current"
 BASELINE="$OUT_ROOT/baseline"
-MIN_BYTES=20000   # 低于此值几乎可以断定是空白页
+MIN_INK=0.01      # 非背景像素低于 1% 判为没渲染出来（实测最简的设置页是 4.5%）
 
 mode="render"
 case "${1:-}" in
@@ -77,9 +78,8 @@ render() {
 
   local suspicious=0
   for f in "$dest"/*.png; do
-    local size; size=$(stat -f%z "$f")
-    if [ "$size" -lt "$MIN_BYTES" ]; then
-      echo "  ⚠️  $(basename "$f") 只有 $((size/1024))KB，很可能整页渲染成了空白"
+    if ! python3 "$REPO/tools/pngink.py" "$f" --min "$MIN_INK" >/dev/null; then
+      echo "  ⚠️  $(basename "$f") 几乎没有内容，多半整页没渲染出来"
       suspicious=$((suspicious+1))
     fi
   done

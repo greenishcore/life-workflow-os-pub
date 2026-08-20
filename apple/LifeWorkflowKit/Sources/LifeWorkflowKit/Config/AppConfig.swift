@@ -66,6 +66,84 @@ public struct AppConfig: Sendable, Codable, Hashable {
         self.openAIModel = openAIModel
     }
 
+    // MARK: 与 Python 版互通
+
+    // 两套实现写同一个配置文件，但字段名一直是两套：Swift 用 roots / logsPath…，
+    // Python 用 vault_dir / logs_dir…。此前谁都读不懂对方，`load()` 只会静默退回
+    // 默认值——**正是「命令行改的 vault 和应用里看到的不一样」这个本来要防的毛病**。
+    //
+    // 修法是让双方在一组共同字段上达成一致，并且**各自把对方的字段原样写回去**：
+    // Swift 写 roots 的同时也写 vault_dir，Python 反之。
+    // 解码时优先读自己的富字段（roots 能表达复合 vault，vault_dir 不能），
+    // 没有才退回共同字段。
+
+    enum CodingKeys: String, CodingKey {
+        case roots, logsPath, promptsPath, cachePath, skillsPath
+        case theme
+        case defaultCalendar, defaultReminderList
+        case openAIBaseURL, openAIModel
+        // 与 Python 版共用的字段（蛇形命名是 Python 那边的既有约定，就以它为准）
+        case vaultDir = "vault_dir"
+        case logsDir = "logs_dir"
+        case promptsDir = "prompts_dir"
+        case cacheDir = "cache_dir"
+        case skillsDir = "skills_dir"
+        case pyCalendar = "default_calendar"
+        case pyReminderList = "default_reminder_list"
+        case pyBaseURL = "openai_base_url"
+        case pyModel = "openai_model"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        func str(_ a: CodingKeys, _ b: CodingKeys, _ fallback: String = "") -> String {
+            (try? c.decode(String.self, forKey: a))
+                ?? (try? c.decode(String.self, forKey: b))
+                ?? fallback
+        }
+        if let decoded = try? c.decode([RootConfig].self, forKey: .roots), !decoded.isEmpty {
+            roots = decoded
+        } else if let dir = try? c.decode(String.self, forKey: .vaultDir), !dir.isEmpty {
+            // Python 只表达得了单个 vault
+            roots = [RootConfig(id: "local", path: dir, displayName: "本地")]
+        } else {
+            roots = []
+        }
+        logsPath = str(.logsPath, .logsDir)
+        promptsPath = str(.promptsPath, .promptsDir)
+        cachePath = str(.cachePath, .cacheDir)
+        skillsPath = str(.skillsPath, .skillsDir)
+        theme = (try? c.decode(String.self, forKey: .theme)) ?? "system"
+        defaultCalendar = str(.defaultCalendar, .pyCalendar, "个人")
+        defaultReminderList = str(.defaultReminderList, .pyReminderList, "提醒事项")
+        openAIBaseURL = str(.openAIBaseURL, .pyBaseURL, "https://api.openai.com/v1")
+        openAIModel = str(.openAIModel, .pyModel, "gpt-4o-mini")
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(roots, forKey: .roots)
+        try c.encode(logsPath, forKey: .logsPath)
+        try c.encode(promptsPath, forKey: .promptsPath)
+        try c.encode(cachePath, forKey: .cachePath)
+        try c.encode(skillsPath, forKey: .skillsPath)
+        try c.encode(theme, forKey: .theme)
+        try c.encode(defaultCalendar, forKey: .defaultCalendar)
+        try c.encode(defaultReminderList, forKey: .defaultReminderList)
+        try c.encode(openAIBaseURL, forKey: .openAIBaseURL)
+        try c.encode(openAIModel, forKey: .openAIModel)
+        // 同时写出 Python 认识的那一份，否则命令行那边会看不到应用改过的 vault
+        try c.encode(roots.first?.path ?? "", forKey: .vaultDir)
+        try c.encode(logsPath, forKey: .logsDir)
+        try c.encode(promptsPath, forKey: .promptsDir)
+        try c.encode(cachePath, forKey: .cacheDir)
+        try c.encode(skillsPath, forKey: .skillsDir)
+        try c.encode(defaultCalendar, forKey: .pyCalendar)
+        try c.encode(defaultReminderList, forKey: .pyReminderList)
+        try c.encode(openAIBaseURL, forKey: .pyBaseURL)
+        try c.encode(openAIModel, forKey: .pyModel)
+    }
+
     // MARK: 派生
 
     public var vaultRoots: [VaultRoot] { roots.map(\.root) }

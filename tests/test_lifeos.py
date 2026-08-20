@@ -326,6 +326,9 @@ class TestConfig(unittest.TestCase):
     def test_env_overrides_and_recomputes(self):
         old = dict(os.environ)
         try:
+            # 配置目录也要隔离：不隔离的话 load() 会读到开发机上真实的
+            # config.json，测试结果就跟着用户环境走了
+            os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()
             os.environ["VAULT_DIR"] = "/tmp/env-vault"
             cfg = Config.load()
             self.assertEqual(str(cfg.vault), "/tmp/env-vault")
@@ -337,6 +340,7 @@ class TestConfig(unittest.TestCase):
     def test_explicit_convert_dir_wins(self):
         old = dict(os.environ)
         try:
+            os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()
             os.environ["VAULT_DIR"] = "/tmp/env-vault"
             os.environ["CONVERT_MD_DIR"] = "/tmp/custom-md"
             self.assertEqual(Config.load().convert_md_dir, "/tmp/custom-md")
