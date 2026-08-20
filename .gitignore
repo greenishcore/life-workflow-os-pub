@@ -43,6 +43,9 @@ converted/
 .snap/
 .snapshots/
 
+# 本地签名配置：Team ID 绑定个人身份，不进公开仓库
+apple/LifeOSApp/Signing.local.xcconfig
+
 # 系统
 *.log
 

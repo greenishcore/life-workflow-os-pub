@@ -14,17 +14,24 @@ packages:
   LifeWorkflowKit:
     path: ../LifeWorkflowKit
 
+configFiles:
+  Debug: Signing.xcconfig
+  Release: Signing.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
-    # 本机没有签名身份，用 ad-hoc 签名以便本地运行；
-    # 等配了 Apple ID 改成 Automatic 即可。
-    CODE_SIGN_IDENTITY: "-"
-    CODE_SIGNING_REQUIRED: "NO"
-    CODE_SIGNING_ALLOWED: "NO"
+    # 自动签名。团队来自 Signing.xcconfig，默认为空 —— 空团队时模拟器照常构建，
+    # 真机构建会得到 Xcode 明确的「未选择团队」提示，而不是装到一半才报
+    # 「No code signature found」。
+    #
+    # **别再把 CODE_SIGNING_ALLOWED 设成 NO**：那会让构建产物完全没有签名，
+    # 于是即便配好了 Apple ID 与描述文件，真机安装也永远失败。这个坑踩过一次。
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: $(LIFEOS_DEVELOPMENT_TEAM)
     ENABLE_HARDENED_RUNTIME: "NO"
 
 targets:
@@ -39,6 +46,12 @@ targets:
     settings:
       base:
         PRODUCT_NAME: Life Workflow OS
+        # macOS 端刻意保持 ad-hoc 签名：桌面应用不需要描述文件，ad-hoc 本地就能跑，
+        # 这样没有开发团队的人 clone 下来也能构建出可用的 .app。
+        # iOS / watchOS 则必须走自动签名，否则装不上真机。
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        DEVELOPMENT_TEAM: ""
         PRODUCT_BUNDLE_IDENTIFIER: com.lifeos.workflow
         ASSETCATALOG_COMPILER_APPICON_NAME: ""
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
@@ -76,17 +89,18 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"     # iPhone + iPad
         # 免费 Apple ID 无法使用 iCloud 权益；vault 通过文档选择器 + 书签接入，
         # 用户可以选 iCloud Drive 里的目录，不需要任何权益。
-        CODE_SIGN_IDENTITY: ""
-        CODE_SIGNING_REQUIRED: "NO"
-        CODE_SIGNING_ALLOWED: "NO"
+        # 签名继承项目级的自动签名，不在这里覆盖。
     info:
       path: Resources/Info-iOS.plist
       properties:
         CFBundleName: Life Workflow OS
         CFBundleDisplayName: 生活工作流
         UILaunchScreen: {}
+        # 四个方向都要声明：target 支持 iPad（TARGETED_DEVICE_FAMILY "1,2"），
+        # 而 iPad 上不支持全部方向就会有构建警告，除非声明 UIRequiresFullScreen。
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         # 让 vault 在「文件」App 里可见可编辑，用户能自己放进 iCloud Drive
@@ -109,10 +123,8 @@ targets:
       base:
         PRODUCT_NAME: 生活工作流
         PRODUCT_BUNDLE_IDENTIFIER: com.lifeos.workflow.watchkitapp
-        # 与 iOS / macOS 同样没有签名身份，模拟器上跑不需要
-        CODE_SIGN_IDENTITY: ""
-        CODE_SIGNING_REQUIRED: "NO"
-        CODE_SIGNING_ALLOWED: "NO"
+        # 签名继承项目级的自动签名。手表是伴侣应用，它和 iOS 应用各自需要一份
+        # 描述文件，Xcode 会按 bundle ID 自动签发。
     info:
       path: Resources/Info-watchOS.plist
       properties:

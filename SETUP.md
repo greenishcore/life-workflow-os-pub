@@ -56,19 +56,39 @@ bash tools/try-sim.sh watch --demo    # 或用仓库自带的示例数据
 **这是单向复制**：模拟器里改的内容不会回到你的 iCloud——模拟器读不到宿主机的
 iCloud Drive，这是模拟器的限制，不是应用的。
 
-### 装到真机
+### 装到真机（iPhone / Apple Watch）
 
-需要一个**代码签名身份**，`security find-identity -p codesigning -v` 若返回
-`0 valid identities found` 就还不能装。用免费 Apple ID 就够：
+**免费 Apple ID 就够**，不需要 99 美元的开发者账号。
 
-1. Xcode → Settings → Accounts → `+` → 加你的 Apple ID（免费账号即可）
-2. 打开 `apple/LifeOSApp/LifeOS.xcodeproj`，选中 target → Signing & Capabilities
-3. 勾上 Automatically manage signing，Team 选你的 Personal Team
-4. 选真机 → Run
+```bash
+# 1. Xcode → Settings → Accounts → 左下角 + → 加你的 Apple ID
+# 2. 读出 Team ID 并写进本地配置（已 gitignore，不会进仓库）
+bash tools/setup-signing.sh
+cd apple/LifeOSApp && xcodegen generate
+```
 
-注意免费账号的两个限制：**描述文件 7 天过期**（到期要重新 Run 一次），
-以及 iCloud 容器、App Groups、CloudKit、Widget 这些权益都拿不到——
-手表端的数据同步因此还没实现，界面能看，数据要靠 iPhone 侧手动放。
+之后在 Xcode 里选真机 Run 即可。命令行装法：
+
+```bash
+cd apple/LifeOSApp
+xcodebuild -project LifeOS.xcodeproj -scheme LifeOS-iOS -configuration Debug \
+  -destination 'generic/platform=iOS' -derivedDataPath /tmp/dev-ios -quiet build
+xcrun devicectl list devices                       # 找你设备的 UDID
+xcrun devicectl device install app --device <UDID> \
+  /tmp/dev-ios/Build/Products/Debug-iphoneos/*.app
+```
+
+手表版**嵌在 iOS 应用里**（伴侣应用），装完 iPhone 端之后去 iPhone 的
+「Watch」App 里安装它。
+
+免费账号的两条硬限制：
+
+- **描述文件 7 天过期**，到期重新 Run / 重装一次即可
+- 拿不到 iCloud 容器、App Groups、CloudKit、Widget 权益——
+  **手表端的数据同步因此还没实现**，界面能看，数据要从 iPhone 侧放
+
+> 没有开发团队也能用：macOS 版走 ad-hoc 签名，模拟器不需要签名，
+> 两者都不受影响。签名只是真机安装的门槛。
 
 ## 2. 可选依赖（缺了只影响对应功能）
 

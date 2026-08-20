@@ -1,0 +1,18 @@
+// 签名配置。
+//
+// 默认**不指定开发团队**：模拟器构建不需要签名，任何人 clone 下来都能直接跑。
+// 要装到真机（iPhone / Apple Watch），需要一个开发团队 —— 免费 Apple ID 就够：
+//
+//   1. Xcode → Settings → Accounts → 加你的 Apple ID
+//   2. bash tools/setup-signing.sh        （自动读出 Team ID 写进本地文件）
+//   3. cd apple/LifeOSApp && xcodegen generate
+//
+// 第 2 步写的是 Signing.local.xcconfig，**已 gitignore**：
+// Team ID 不是密钥（没有私钥签不了任何东西），但它绑定你的身份，
+// 公开仓库里不该带着。
+
+LIFEOS_DEVELOPMENT_TEAM =
+
+// 有本地文件就用本地的。`#include?` 的问号表示「没有也不报错」，
+// 所以新克隆的仓库不会因为缺这个文件而构建失败。
+#include? "Signing.local.xcconfig"
