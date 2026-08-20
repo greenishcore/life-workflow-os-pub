@@ -23,6 +23,15 @@ enum Theme {
     static let cardBackground = Color(nsColor: .controlBackgroundColor)
     static let pageBackground = Color(nsColor: .windowBackgroundColor)
     static let border = Color(nsColor: .separatorColor)
+    #elseif os(watchOS)
+    // watchOS 上**所有自适应背景/分隔线语义色都不可用**（UIKit 头文件里
+    // systemBackground / systemGroupedBackground / separator 都标了
+    // API_UNAVAILABLE(watchos)），只剩固定色与 label 色。
+    // 而且 watchOS 没有浅色模式，表盘永远是黑底，所以直接给定值即可，
+    // 不需要「跟随主题」——这里不是偷懒，是平台本来就只有一种外观。
+    static let cardBackground = Color.white.opacity(0.12)
+    static let pageBackground = Color.black
+    static let border = Color.white.opacity(0.2)
     #else
     static let cardBackground = Color(uiColor: .secondarySystemGroupedBackground)
     static let pageBackground = Color(uiColor: .systemGroupedBackground)

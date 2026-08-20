@@ -165,17 +165,17 @@ public enum ArchExtractor {
             severity: .advisory,
             violations: directionViolations))
 
-        // 3. macOS 与 iOS 的 UI 互不依赖
+        // 3. 三端 UI 互不依赖
+        let uiTargets: Set<String> = ["app.macos", "app.ios", "app.watchos"]
         let crossUI = edges.filter {
-            ($0.from == "app.macos" && $0.to == "app.ios") ||
-            ($0.from == "app.ios" && $0.to == "app.macos")
+            uiTargets.contains($0.from) && uiTargets.contains($0.to) && $0.from != $0.to
         }
         out.append(Invariant(
             id: "ui-targets-isolated",
-            title: "macOS 与 iOS 的 UI 互不依赖",
-            rationale: "两端 UI 刻意各写各的。**构建系统已经保证了这一点**——"
-                + "macOS 与 iOS 是不同 target（Shared+macOS / Shared+iOS），跨端引用根本编译不过。"
-                + "这里保留只为说明意图，不作门禁",
+            title: "三端 UI 互不依赖",
+            rationale: "各端 UI 刻意各写各的——表盘不是缩小的手机，手机不是缩小的桌面。"
+                + "**构建系统已经保证了这一点**：三端是不同 target（Shared+各自），"
+                + "跨端引用根本编译不过。这里保留只为说明意图，不作门禁",
             severity: .advisory,
             violations: crossUI.map {
                 .init(file: $0.viaFiles.first ?? "", detail: "\($0.from) → \($0.to)")

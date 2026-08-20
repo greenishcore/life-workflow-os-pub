@@ -1,13 +1,13 @@
 # 设计系统
 
-> 两端（macOS / iOS）共用一份令牌与组件，都在
+> 三端（macOS / iOS / watchOS）共用一份令牌与组件，都在
 > [`apple/LifeOSApp/Sources/Shared/Theme.swift`](../../apple/LifeOSApp/Sources/Shared/Theme.swift)。
 > 改设计从这个文件开始。
 
 ## 一、颜色
 
 **没有调色板，用的是系统语义色。** 这是有意的：明暗主题、辅助功能的增强对比度、
-以及各平台自己的观感规范都会自动跟随，不需要维护两套色值。
+以及各平台自己的观感规范都会自动跟随，不需要每端维护一套色值。
 
 | 令牌 | 含义 |
 |---|---|
@@ -17,7 +17,13 @@
 | `Theme.pageBackground` | 页面底色 |
 | `Theme.border` | 分隔线与描边 |
 
-后三个按平台取不同的系统色（macOS 用 `NSColor`，iOS 用 `UIColor`），已在 `Theme` 里分好。
+后三个按平台取不同的系统色，已在 `Theme` 里分好：macOS 用 `NSColor`，iOS 用 `UIColor`。
+
+**watchOS 是例外，只能给定值。** 实测：`systemBackground` / `systemGroupedBackground` /
+`secondarySystemGroupedBackground` / `separator` 在 watchOS 上**全部标了
+`API_UNAVAILABLE(watchos)`**，只剩固定色（`.systemRed` 等）与 label 色。
+而且 **watchOS 没有浅色模式**（`simctl ui appearance light` 返回 "Operation not supported"），
+表盘永远黑底，所以直接写死是对的——不是偷懒，是平台只有一种外观。
 
 **状态色不在这里**，它们由模型层用十六进制串携带（`Status.colorHex` / `Priority.colorHex` /
 `RunLog.Status.colorHex` / `Skill.Status.colorHex`），`Theme.swift` 里的 `Color(hex:)`
@@ -65,13 +71,31 @@
 `pageTitle` / `sectionTitle` / `sidebarTitle` 也是固定的：语义档位在 17（`.title2`）
 与 22（`.title`）之间跳，两个都会明显改变现有层级，留给你按新设计定夺。
 
+### 三端的实际字号
+
+同一个令牌在三端解析出不同的绝对字号，这是对的——各自遵循各自平台的规范。
+下表全是 `preferredFont(forTextStyle:)` 的实测值：
+
+| 令牌 | macOS | iOS | watchOS |
+|---|---|---|---|
+| `Typo.metric`（`.largeTitle`） | 26 | 34 | **36** |
+| `Typo.body` | 13 | 17 | 16 |
+| `Typo.list`（`.callout`） | 12 | 16 | **16** |
+| `Typo.hint`（`.subheadline`） | 11 | 15 | 15 |
+| `Typo.micro`（`.footnote`） | 10 | 13 | 13 |
+
+⚠️ **`body` 与 `list` 在 watchOS 上都是 16，会撞在一起。** 手表上想区分正文与列表，
+不能只靠这两个令牌，得配字重或颜色。
+
+watchOS 的字号**不随表盘尺寸变**（40mm 与 46mm 实测完全相同），这点可以放心。
+
 ### 一条要知道的事实
 
 **macOS 没有动态字体。** 实测：`NSFont.preferredFont(forTextStyle: .body)` 恒为 13.0，
 给视图加 `.dynamicTypeSize(.accessibility5)` 渲染结果一个像素都不变。
 
-所以用语义字体在 macOS 上是**中性**的，好处只在 iOS 侧兑现（那边会跟随用户的
-「文字大小」设置）。别在 macOS 上花力气做动态字体适配，那是空的。
+所以用语义字体在 macOS 上是**中性**的，好处在 iOS 与 watchOS 兑现（那两端会跟随
+用户的「文字大小」设置）。别在 macOS 上花力气做动态字体适配，那是空的。
 
 ## 三、间距
 
@@ -96,7 +120,7 @@ cd apple/LifeWorkflowKit && swift run archmap-tool --repo ../.. --check
 
 ## 四、组件
 
-都在 `Theme.swift` 里，两端可用。
+都在 `Theme.swift` 里，三端可用。
 
 | 组件 | 用途 | 关键参数 |
 |---|---|---|
@@ -113,9 +137,9 @@ cd apple/LifeWorkflowKit && swift run archmap-tool --repo ../.. --check
 [`Destination.swift`](../../apple/LifeOSApp/Sources/Shared/Destination.swift)——
 它同时是侧边栏导航的数据源，改文案改那里。
 
-## 五、两个绕不开的坑
+## 五、三个绕不开的坑
 
-这两条不是设计问题，是工具的限制，改布局时会撞上：
+这三条不是设计问题，是平台与工具的限制，改布局时会撞上：
 
 1. **`ImageRenderer` 不给 `ScrollView` 里的内容做布局**，渲染出来是空白。
    macOS 的 `PageScaffold` 因此有一个 `isSnapshotting` 环境值：快照时换成固定高度的
@@ -123,8 +147,12 @@ cd apple/LifeWorkflowKit && swift run archmap-tool --repo ../.. --check
 
 2. **`NavigationSplitView` / `HSplitView` / `List` / `Form` 由 AppKit / UIKit 支撑**，
    `ImageRenderer` 渲染它们只得到占位图。macOS 端用 `SplitOrStack` 绕过；
-   iOS 端页面全是 `List` / `Form`，所以 **iOS 根本不用 ImageRenderer**，
-   改用模拟器真实截图（见 [handoff.md](handoff.md)）。
+   iOS 与 watchOS 的页面全是 `NavigationStack` + `List` / `Form`，
+   所以**这两端根本不用 ImageRenderer**，改用模拟器真实截图（见 [handoff.md](handoff.md)）。
+
+3. **`onContinuousHover` 在 watchOS 不可用**（手表没有指针）。
+   `HeatmapCalendar` 因此把悬停整段包在 `#if !os(watchOS)` 里。
+   新增任何依赖悬停的交互，都要考虑手表上退化成什么。
 
 ## 六、Python 桌面版不在这套系统里
 

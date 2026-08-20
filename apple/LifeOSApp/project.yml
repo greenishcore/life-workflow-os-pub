@@ -6,6 +6,7 @@ options:
   deploymentTarget:
     macOS: "14.0"
     iOS: "17.0"
+    watchOS: "10.0"
   createIntermediateGroups: true
   groupSortPosition: top
 
@@ -63,6 +64,11 @@ targets:
       - path: Sources/iOS
     dependencies:
       - package: LifeWorkflowKit
+      # 手表应用嵌在 iOS 应用里 —— 这是「伴侣应用」的必要条件，
+      # 也是 WatchConnectivity 能用的前提（免费账号下唯一可用的手表数据通道）。
+      - target: LifeOS-watchOS
+        embed: true
+        codeSign: false
     settings:
       base:
         PRODUCT_NAME: Life Workflow OS
@@ -90,3 +96,29 @@ targets:
         NSCalendarsFullAccessUsageDescription: 用于把日历事件导入到当天的 Daily 笔记。
         NSMicrophoneUsageDescription: 用于语音听写快速捕获想法。
         NSSpeechRecognitionUsageDescription: 用于把语音转成文字，快速记下想法。
+
+  LifeOS-watchOS:
+    type: application
+    platform: watchOS
+    sources:
+      - path: Sources/Shared
+      - path: Sources/watchOS
+    dependencies:
+      - package: LifeWorkflowKit
+    settings:
+      base:
+        PRODUCT_NAME: 生活工作流
+        PRODUCT_BUNDLE_IDENTIFIER: com.lifeos.workflow.watchkitapp
+        # 与 iOS / macOS 同样没有签名身份，模拟器上跑不需要
+        CODE_SIGN_IDENTITY: ""
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGNING_ALLOWED: "NO"
+    info:
+      path: Resources/Info-watchOS.plist
+      properties:
+        CFBundleName: 生活工作流
+        CFBundleDisplayName: 生活工作流
+        # watchOS 7+ 的单 target 手表应用
+        WKApplication: true
+        # 指向 iOS 应用 —— 没有这一条就不是伴侣应用，WatchConnectivity 用不了
+        WKCompanionAppBundleIdentifier: com.lifeos.workflow

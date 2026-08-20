@@ -76,6 +76,9 @@ struct HeatmapCalendar: View {
                 }
             }
             .contentShape(Rectangle())
+            // 悬停在 watchOS 上不存在（onContinuousHover 显式不可用），
+            // 手表也没有指针，格子靠点击选中就够了
+            #if !os(watchOS)
             .onContinuousHover { phase in
                 switch phase {
                 case .active(let point):
@@ -85,8 +88,9 @@ struct HeatmapCalendar: View {
                     hovered = nil
                 }
             }
-            .onTapGesture { if let hovered { onSelect?(hovered) } }
             .help(hovered.map { "\($0)：\(data[$0] ?? 0) 次活动" } ?? "")
+            #endif
+            .onTapGesture { if let hovered { onSelect?(hovered) } }
         }
         .frame(height: topPad + 7 * (cell + gap) + 6)
     }

@@ -39,6 +39,7 @@ public enum LayerRules {
         ("apple/LifeOSApp/Sources/Shared",                            "app.shared",     "Shared",      "presentation", "shared"),
         ("apple/LifeOSApp/Sources/macOS",                             "app.macos",      "macOS UI",    "presentation", "macOS"),
         ("apple/LifeOSApp/Sources/iOS",                               "app.ios",        "iOS UI",      "presentation", "iOS"),
+        ("apple/LifeOSApp/Sources/watchOS",                           "app.watchos",    "watchOS UI",  "presentation", "watchOS"),
     ]
 
     /// 数据产物。`markers` 是判定「谁碰了它」的符号，不是手写死的读写方名单。

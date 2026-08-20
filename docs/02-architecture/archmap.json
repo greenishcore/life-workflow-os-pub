@@ -291,6 +291,13 @@
       ]
     },
     {
+      "from" : "app.watchos",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/watchOS/Views/WatchRootView.swift"
+      ]
+    },
+    {
       "from" : "kit.archmap",
       "to" : "kit.services",
       "viaFiles" : [
@@ -786,9 +793,9 @@
     },
     {
       "id" : "ui-targets-isolated",
-      "rationale" : "两端 UI 刻意各写各的。**构建系统已经保证了这一点**——macOS 与 iOS 是不同 target（Shared+macOS / Shared+iOS），跨端引用根本编译不过。这里保留只为说明意图，不作门禁",
+      "rationale" : "各端 UI 刻意各写各的——表盘不是缩小的手机，手机不是缩小的桌面。**构建系统已经保证了这一点**：三端是不同 target（Shared+各自），跨端引用根本编译不过。这里保留只为说明意图，不作门禁",
       "severity" : "advisory",
-      "title" : "macOS 与 iOS 的 UI 互不依赖",
+      "title" : "三端 UI 互不依赖",
       "violations" : [
 
       ]
@@ -1610,10 +1617,10 @@
             "LifeWorkflowKit",
             "SwiftUI"
           ],
-          "lines" : 103,
+          "lines" : 105,
           "path" : "apple/LifeOSApp/Sources/Shared/HeatmapCalendar.swift",
           "platformGates" : [
-
+            "watchOS"
           ],
           "publicTypes" : [
 
@@ -1637,10 +1644,11 @@
             "SwiftUI",
             "UIKit"
           ],
-          "lines" : 256,
+          "lines" : 260,
           "path" : "apple/LifeOSApp/Sources/Shared/Theme.swift",
           "platformGates" : [
-            "macOS"
+            "macOS",
+            "watchOS"
           ],
           "publicTypes" : [
 
@@ -1663,6 +1671,68 @@
 
       ],
       "target" : "shared"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 13,
+          "path" : "apple/LifeOSApp/Sources/watchOS/App/LifeOSWatchApp.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 153,
+          "path" : "apple/LifeOSApp/Sources/watchOS/Views/WatchRootView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ],
+          "robustness" : {
+            "catchBlocks" : 0,
+            "fatalSites" : 0,
+            "forceUnwraps" : 0,
+            "forcedTries" : 0,
+            "silencedErrors" : 0,
+            "throwingFunctions" : 0
+          }
+        }
+      ],
+      "id" : "app.watchos",
+      "layerID" : "presentation",
+      "name" : "watchOS UI",
+      "path" : "apple/LifeOSApp/Sources/watchOS",
+      "publicTypes" : [
+
+      ],
+      "target" : "watchOS"
     },
     {
       "files" : [
@@ -1755,7 +1825,7 @@
           "imports" : [
             "Foundation"
           ],
-          "lines" : 80,
+          "lines" : 81,
           "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/LayerRules.swift",
           "platformGates" : [
 
