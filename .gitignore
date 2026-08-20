@@ -37,8 +37,11 @@ venv/
 .cache/
 converted/
 
-# 快照夹具（由 tools/snapshot.sh 从 seed/ 重建，不必入库）
+# 快照夹具与产物（由 tools/snapshot.sh 从 seed/ 重建）。
+# 18 张图约 7MB，每次设计改动都重传会把仓库撑大，因此基线不入库——
+# 它是本地反馈回路，不是版本化产物。
 .snap/
+.snapshots/
 
 # 系统
 *.log
