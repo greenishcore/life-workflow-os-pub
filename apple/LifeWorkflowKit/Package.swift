@@ -6,11 +6,18 @@ let package = Package(
     // watchOS 保留在平台列表里：M4 暂缓但不排除，等付费账号就位可直接编译。
     platforms: [.macOS(.v14), .iOS(.v17), .watchOS(.v10)],
     products: [
-        .library(name: "LifeWorkflowKit", targets: ["LifeWorkflowKit"])
+        .library(name: "LifeWorkflowKit", targets: ["LifeWorkflowKit"]),
+        // 供 CI 与本地重生成架构地图数据
+        .executable(name: "archmap-tool", targets: ["archmap-tool"]),
     ],
     targets: [
         .target(
             name: "LifeWorkflowKit",
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
+        .executableTarget(
+            name: "archmap-tool",
+            dependencies: ["LifeWorkflowKit"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(

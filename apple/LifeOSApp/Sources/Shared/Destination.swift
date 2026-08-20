@@ -2,13 +2,14 @@ import Foundation
 
 /// 侧边栏导航项，按「捕捉 → 整理 → 执行 → 复盘 → 归档」五阶段闭环分组。
 enum Destination: String, CaseIterable, Identifiable, Hashable {
-    case dashboard, capture, ideas, convert, prompts, logs, archive, settings
+    case dashboard, archmap, capture, ideas, convert, prompts, logs, archive, settings
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .dashboard: "看板"
+        case .archmap:   "架构地图"
         case .capture:   "快速捕获"
         case .ideas:     "想法库"
         case .convert:   "格式转换"
@@ -22,6 +23,7 @@ enum Destination: String, CaseIterable, Identifiable, Hashable {
     var subtitle: String {
         switch self {
         case .dashboard: "融合时间 · 精力 · 优先级 · 状态 · 思维轨迹"
+        case .archmap:   "模块依赖 · 信息流向 · 架构约束 · 改动风险"
         case .capture:   "想到什么先记下来，之后再整理成想法"
         case .ideas:     "想法是一等公民：时间 · 状态 · 优先级 · 标签 · 思路注释"
         case .convert:   "任意格式 → Markdown（带缓存）→ PDF / Word / HTML"
@@ -35,6 +37,7 @@ enum Destination: String, CaseIterable, Identifiable, Hashable {
     var symbol: String {
         switch self {
         case .dashboard: "chart.dots.scatter"
+        case .archmap:   "square.stack.3d.up"
         case .capture:   "square.and.pencil"
         case .ideas:     "lightbulb"
         case .convert:   "arrow.left.arrow.right"
@@ -47,7 +50,7 @@ enum Destination: String, CaseIterable, Identifiable, Hashable {
 
     var group: NavGroup {
         switch self {
-        case .dashboard: .overview
+        case .dashboard, .archmap: .overview
         case .capture:   .capture
         case .ideas, .convert: .organize
         case .prompts:   .execute

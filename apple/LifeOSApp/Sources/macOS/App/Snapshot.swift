@@ -52,7 +52,9 @@ enum Snapshot {
             // ImageRenderer 不执行 .task，靠页面自己加载的数据必须在这里预热，
             // 否则截出来的是空状态而不是真实状态
             await state.refreshSkills(since: ReviewService.defaultSince(days: 30))
-            log("[snapshot] 数据就绪，\(state.items.count) 条记录，\(state.skills.count) 个 skill")
+            await state.loadArchMap()
+            log("[snapshot] 数据就绪，\(state.items.count) 条记录，\(state.skills.count) 个 skill，"
+                + "\(state.archModel?.modules.count ?? 0) 个模块")
             do {
                 try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
                 for scheme in [ColorScheme.light, .dark] {
@@ -134,6 +136,7 @@ enum Snapshot {
         @ViewBuilder private var page: some View {
             switch destination {
             case .dashboard: DashboardView()
+            case .archmap:   ArchMapView()
             case .capture:   CaptureView()
             case .ideas:     IdeasView()
             case .convert:   ConvertView()

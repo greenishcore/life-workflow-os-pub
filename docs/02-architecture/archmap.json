@@ -1,0 +1,1800 @@
+{
+  "artifacts" : [
+    {
+      "consumers" : [
+        "app.macos",
+        "kit.services"
+      ],
+      "declaredBy" : [
+        "kit.config"
+      ],
+      "id" : "cache",
+      "markers" : [
+        "ConvertService",
+        "cacheURL"
+      ],
+      "name" : "转换缓存",
+      "path" : ".cache/*.md",
+      "producers" : [
+        "app.macos",
+        "kit.services"
+      ],
+      "summary" : "sha256(输入)+转换器版本 为键，避免重复烧算力"
+    },
+    {
+      "consumers" : [
+        "kit.store"
+      ],
+      "declaredBy" : [
+
+      ],
+      "id" : "conflicts",
+      "markers" : [
+        "CloudSyncService",
+        "ConflictPolicy"
+      ],
+      "name" : "冲突落败版本",
+      "path" : "vault/.conflicts/**",
+      "producers" : [
+        "kit.store"
+      ],
+      "summary" : "iCloud 冲突中落败的版本，永不静默丢弃"
+    },
+    {
+      "consumers" : [
+        "app.macos",
+        "kit.services"
+      ],
+      "declaredBy" : [
+        "kit.config"
+      ],
+      "id" : "prompts",
+      "markers" : [
+        "PromptService",
+        "promptsURL"
+      ],
+      "name" : "提示词库",
+      "path" : "prompts/01_rewritten/*.md",
+      "producers" : [
+        "app.macos",
+        "kit.services"
+      ],
+      "summary" : "交互前重写的结构化提示词"
+    },
+    {
+      "consumers" : [
+        "app.shared",
+        "kit.services"
+      ],
+      "declaredBy" : [
+        "kit.config"
+      ],
+      "id" : "runlog",
+      "markers" : [
+        "RunLogService",
+        "runLogJSONL"
+      ],
+      "name" : "运行日志",
+      "path" : "logs/run-log.jsonl",
+      "producers" : [
+        "app.shared",
+        "kit.services"
+      ],
+      "summary" : "每次操作的成果与过程，复盘的原料"
+    },
+    {
+      "consumers" : [
+        "app.shared",
+        "kit.services"
+      ],
+      "declaredBy" : [
+        "kit.config"
+      ],
+      "id" : "skills",
+      "markers" : [
+        "SkillsService",
+        "skillsURL"
+      ],
+      "name" : "技能库",
+      "path" : "skills/*.md",
+      "producers" : [
+        "app.shared",
+        "kit.services"
+      ],
+      "summary" : "从复盘提炼出的可复用操作"
+    },
+    {
+      "consumers" : [
+        "app.intents",
+        "app.ios",
+        "app.shared",
+        "kit.store"
+      ],
+      "declaredBy" : [
+
+      ],
+      "id" : "vault",
+      "markers" : [
+        "VaultStore"
+      ],
+      "name" : "vault（Markdown 事实源）",
+      "path" : "vault/**.md",
+      "producers" : [
+        "app.shared",
+        "kit.store"
+      ],
+      "summary" : "想法 / 日记 / 项目，唯一事实源"
+    }
+  ],
+  "edges" : [
+    {
+      "from" : "app.intents",
+      "to" : "kit.config",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/Intents/IntentVault.swift"
+      ]
+    },
+    {
+      "from" : "app.intents",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/Intents/IdeaEntity.swift"
+      ]
+    },
+    {
+      "from" : "app.intents",
+      "to" : "kit.services",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/Intents/CaptureIntents.swift"
+      ]
+    },
+    {
+      "from" : "app.intents",
+      "to" : "kit.store",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/Intents/IntentVault.swift"
+      ]
+    },
+    {
+      "from" : "app.ios",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/iOS/Views/DashboardView.swift",
+        "apple/LifeOSApp/Sources/iOS/Views/IdeasView.swift",
+        "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift"
+      ]
+    },
+    {
+      "from" : "app.ios",
+      "to" : "kit.services",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/iOS/Views/CaptureView.swift",
+        "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift"
+      ]
+    },
+    {
+      "from" : "app.ios",
+      "to" : "kit.stats",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/iOS/Views/DashboardView.swift",
+        "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift"
+      ]
+    },
+    {
+      "from" : "app.ios",
+      "to" : "kit.store",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/iOS/App/LifeOSiOSApp.swift",
+        "apple/LifeOSApp/Sources/iOS/App/VaultResolver.swift"
+      ]
+    },
+    {
+      "from" : "app.macos",
+      "to" : "kit.archmap",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/macOS/Components/ArchGraph.swift",
+        "apple/LifeOSApp/Sources/macOS/Components/FlowDiagram.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift"
+      ]
+    },
+    {
+      "from" : "app.macos",
+      "to" : "kit.config",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/macOS/App/Snapshot.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift"
+      ]
+    },
+    {
+      "from" : "app.macos",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift"
+      ]
+    },
+    {
+      "from" : "app.macos",
+      "to" : "kit.services",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/macOS/App/Snapshot.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/CaptureView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/ConvertView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/PromptsView.swift"
+      ]
+    },
+    {
+      "from" : "app.macos",
+      "to" : "kit.stats",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
+        "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift"
+      ]
+    },
+    {
+      "from" : "app.macos",
+      "to" : "kit.store",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
+      "to" : "kit.archmap",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
+      "to" : "kit.config",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift",
+        "apple/LifeOSApp/Sources/Shared/HeatmapCalendar.swift",
+        "apple/LifeOSApp/Sources/Shared/Theme.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
+      "to" : "kit.services",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
+      "to" : "kit.stats",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift"
+      ]
+    },
+    {
+      "from" : "app.shared",
+      "to" : "kit.store",
+      "viaFiles" : [
+        "apple/LifeOSApp/Sources/Shared/AppState.swift"
+      ]
+    },
+    {
+      "from" : "kit.archmap",
+      "to" : "kit.services",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/ArchMetrics.swift"
+      ]
+    },
+    {
+      "from" : "kit.config",
+      "to" : "kit.store",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Config/AppConfig.swift"
+      ]
+    },
+    {
+      "from" : "kit.models",
+      "to" : "kit.frontmatter",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Item.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Skill.swift"
+      ]
+    },
+    {
+      "from" : "kit.services",
+      "to" : "kit.config",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/ConvertService.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/PromptService.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/RunLogService.swift"
+      ]
+    },
+    {
+      "from" : "kit.services",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/EventKitBridge.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/GitService.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/IdeaActions.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/PromptService.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/ReviewService.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/RunLogService.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/SkillsService.swift"
+      ]
+    },
+    {
+      "from" : "kit.services",
+      "to" : "kit.stats",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/ReviewService.swift"
+      ]
+    },
+    {
+      "from" : "kit.stats",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Stats/Aggregations.swift"
+      ]
+    },
+    {
+      "from" : "kit.store",
+      "to" : "kit.frontmatter",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/ConflictPolicy.swift"
+      ]
+    },
+    {
+      "from" : "kit.store",
+      "to" : "kit.models",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/CloudSync.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/ConflictPolicy.swift",
+        "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/VaultStore.swift"
+      ]
+    },
+    {
+      "from" : "kit.tool",
+      "to" : "kit.archmap",
+      "viaFiles" : [
+        "apple/LifeWorkflowKit/Sources/archmap-tool/main.swift"
+      ]
+    }
+  ],
+  "invariants" : [
+    {
+      "id" : "downward-only",
+      "rationale" : "底层不该知道上层存在。反向依赖会让数据层被 UI 变更牵着走，也让单测无法独立",
+      "severity" : "blocking",
+      "title" : "依赖只能向下",
+      "violations" : [
+
+      ]
+    },
+    {
+      "id" : "kit-modules-tested",
+      "rationale" : "核心包会被三端共用，出问题是三端一起出；这里只作参考不阻断，避免为了指标写假测试",
+      "severity" : "advisory",
+      "title" : "核心包每个模块都有测试覆盖",
+      "violations" : [
+
+      ]
+    },
+    {
+      "id" : "kit-no-ui",
+      "rationale" : "核心包要同时供 macOS / iOS（及将来的 watchOS）使用，一旦 import SwiftUI/AppKit，跨端复用就废了",
+      "severity" : "blocking",
+      "title" : "核心包不得依赖 UI 框架",
+      "violations" : [
+
+      ]
+    },
+    {
+      "id" : "subprocess-macos-only",
+      "rationale" : "iOS/watchOS 沙盒不允许 fork 子进程；不隔离会在 iOS 上编译通过、运行时才炸",
+      "severity" : "blocking",
+      "title" : "子进程调用限定 macOS",
+      "violations" : [
+
+      ]
+    },
+    {
+      "id" : "ui-targets-isolated",
+      "rationale" : "两端 UI 刻意各写各的；一旦互相引用，等于变相共用一套界面，平台观感会互相拖累",
+      "severity" : "blocking",
+      "title" : "macOS 与 iOS 的 UI 互不依赖",
+      "violations" : [
+
+      ]
+    }
+  ],
+  "layers" : [
+    {
+      "id" : "data",
+      "name" : "数据层",
+      "rank" : 0,
+      "summary" : "领域模型、确定性序列化、配置、vault 读写——彼此是邻居，无上下之分"
+    },
+    {
+      "id" : "service",
+      "name" : "服务层",
+      "rank" : 1,
+      "summary" : "转换/提示词/日志/复盘/技能/归档/同步/架构提取，纯逻辑不碰 UI"
+    },
+    {
+      "id" : "presentation",
+      "name" : "表现层",
+      "rank" : 2,
+      "summary" : "各端 UI 与 App Intents，只做编排与呈现"
+    }
+  ],
+  "modules" : [
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "AppIntents",
+            "LifeWorkflowKit"
+          ],
+          "lines" : 126,
+          "path" : "apple/LifeOSApp/Sources/Shared/Intents/CaptureIntents.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "AppIntents",
+            "LifeWorkflowKit"
+          ],
+          "lines" : 43,
+          "path" : "apple/LifeOSApp/Sources/Shared/Intents/IdeaEntity.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation",
+            "LifeWorkflowKit"
+          ],
+          "lines" : 14,
+          "path" : "apple/LifeOSApp/Sources/Shared/Intents/IntentVault.swift",
+          "platformGates" : [
+            "iOS"
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "AppIntents"
+          ],
+          "lines" : 46,
+          "path" : "apple/LifeOSApp/Sources/Shared/Intents/Shortcuts.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        }
+      ],
+      "id" : "app.intents",
+      "layerID" : "presentation",
+      "name" : "Intents",
+      "path" : "apple/LifeOSApp/Sources/Shared/Intents",
+      "publicTypes" : [
+
+      ],
+      "target" : "shared"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 53,
+          "path" : "apple/LifeOSApp/Sources/iOS/App/LifeOSiOSApp.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation",
+            "LifeWorkflowKit"
+          ],
+          "lines" : 27,
+          "path" : "apple/LifeOSApp/Sources/iOS/App/VaultResolver.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 182,
+          "path" : "apple/LifeOSApp/Sources/iOS/Views/CaptureView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Charts",
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 106,
+          "path" : "apple/LifeOSApp/Sources/iOS/Views/DashboardView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 229,
+          "path" : "apple/LifeOSApp/Sources/iOS/Views/IdeasView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 39,
+          "path" : "apple/LifeOSApp/Sources/iOS/Views/RootView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI",
+            "UniformTypeIdentifiers"
+          ],
+          "lines" : 165,
+          "path" : "apple/LifeOSApp/Sources/iOS/Views/SettingsView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 136,
+          "path" : "apple/LifeOSApp/Sources/iOS/Views/TodayView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        }
+      ],
+      "id" : "app.ios",
+      "layerID" : "presentation",
+      "name" : "iOS UI",
+      "path" : "apple/LifeOSApp/Sources/iOS",
+      "publicTypes" : [
+
+      ],
+      "target" : "iOS"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 33,
+          "path" : "apple/LifeOSApp/Sources/macOS/App/LifeOSApp.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "AppKit",
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 131,
+          "path" : "apple/LifeOSApp/Sources/macOS/App/Snapshot.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 127,
+          "path" : "apple/LifeOSApp/Sources/macOS/Components/ArchGraph.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 89,
+          "path" : "apple/LifeOSApp/Sources/macOS/Components/FlowDiagram.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "line" : 225,
+              "symbol" : "NSWorkspace"
+            }
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 227,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/ArchMapView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 188,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/ArchiveView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 228,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/CaptureView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "line" : 69,
+              "symbol" : "NSWorkspace"
+            },
+            {
+              "line" : 73,
+              "symbol" : "NSWorkspace"
+            },
+            {
+              "line" : 159,
+              "symbol" : "NSOpenPanel"
+            }
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI",
+            "UniformTypeIdentifiers"
+          ],
+          "lines" : 184,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/ConvertView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Charts",
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 196,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/DashboardView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "line" : 290,
+              "symbol" : "NSWorkspace"
+            }
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 417,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/IdeasView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "line" : 240,
+              "symbol" : "NSWorkspace"
+            }
+          ],
+          "imports" : [
+            "Charts",
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 293,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/LogsView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "line" : 101,
+              "symbol" : "NSWorkspace"
+            }
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 141,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/PromptsView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 90,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/RootView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "line" : 67,
+              "symbol" : "NSWorkspace"
+            },
+            {
+              "line" : 101,
+              "symbol" : "NSWorkspace"
+            },
+            {
+              "line" : 198,
+              "symbol" : "NSOpenPanel"
+            }
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 205,
+          "path" : "apple/LifeOSApp/Sources/macOS/Views/SettingsView.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        }
+      ],
+      "id" : "app.macos",
+      "layerID" : "presentation",
+      "name" : "macOS UI",
+      "path" : "apple/LifeOSApp/Sources/macOS",
+      "publicTypes" : [
+
+      ],
+      "target" : "macOS"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation",
+            "LifeWorkflowKit",
+            "Observation",
+            "SwiftUI"
+          ],
+          "lines" : 254,
+          "path" : "apple/LifeOSApp/Sources/Shared/AppState.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 73,
+          "path" : "apple/LifeOSApp/Sources/Shared/Destination.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "LifeWorkflowKit",
+            "SwiftUI"
+          ],
+          "lines" : 103,
+          "path" : "apple/LifeOSApp/Sources/Shared/HeatmapCalendar.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "AppKit",
+            "LifeWorkflowKit",
+            "SwiftUI",
+            "UIKit"
+          ],
+          "lines" : 223,
+          "path" : "apple/LifeOSApp/Sources/Shared/Theme.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+
+          ]
+        }
+      ],
+      "id" : "app.shared",
+      "layerID" : "presentation",
+      "name" : "Shared",
+      "path" : "apple/LifeOSApp/Sources/Shared",
+      "publicTypes" : [
+
+      ],
+      "target" : "shared"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 205,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/ArchExtractor.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "ArchExtractor"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 63,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/ArchMetrics.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+            "ArchMetrics"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 231,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/ArchModel.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "ArchModel",
+            "Artifact",
+            "Edge",
+            "GuardedSymbol",
+            "Invariant",
+            "Layer",
+            "Module",
+            "SourceFile",
+            "Stage",
+            "Violation"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 79,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/LayerRules.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "LayerRules"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 155,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap/SourceScanner.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "SourceScanner"
+          ]
+        }
+      ],
+      "id" : "kit.archmap",
+      "layerID" : "service",
+      "name" : "ArchMap",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/ArchMap",
+      "publicTypes" : [
+        "ArchExtractor",
+        "ArchMetrics",
+        "ArchModel",
+        "Artifact",
+        "Edge",
+        "GuardedSymbol",
+        "Invariant",
+        "Layer",
+        "LayerRules",
+        "Module",
+        "SourceFile",
+        "SourceScanner",
+        "Stage",
+        "Violation"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 133,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Config/AppConfig.swift",
+          "platformGates" : [
+            "watchOS"
+          ],
+          "publicTypes" : [
+            "AppConfig"
+          ]
+        }
+      ],
+      "id" : "kit.config",
+      "layerID" : "data",
+      "name" : "Config",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Config",
+      "publicTypes" : [
+        "AppConfig"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 174,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Frontmatter/Emitter.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "FrontmatterEmitter"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 180,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Frontmatter/Parser.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "FrontmatterParser"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 149,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Frontmatter/ScalarParser.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 76,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Frontmatter/YAMLValue.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "YAMLMapping",
+            "YAMLValue"
+          ]
+        }
+      ],
+      "id" : "kit.frontmatter",
+      "layerID" : "data",
+      "name" : "Frontmatter",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Frontmatter",
+      "publicTypes" : [
+        "FrontmatterEmitter",
+        "FrontmatterParser",
+        "YAMLMapping",
+        "YAMLValue"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 42,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/DateOnly.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "DateOnly"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 77,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Enums.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "ItemType",
+            "Priority",
+            "Status"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 172,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Item.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "Item"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 123,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/RunLog.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "RunLog"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 111,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/Skill.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "Skill"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 25,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models/ThinkingNote.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "ThinkingNote"
+          ]
+        }
+      ],
+      "id" : "kit.models",
+      "layerID" : "data",
+      "name" : "Models",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Models",
+      "publicTypes" : [
+        "DateOnly",
+        "Item",
+        "ItemType",
+        "Priority",
+        "RunLog",
+        "Skill",
+        "Status",
+        "ThinkingNote"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "CryptoKit",
+            "Foundation"
+          ],
+          "lines" : 224,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/ConvertService.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+            "ConvertService"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "EventKit",
+            "Foundation"
+          ],
+          "lines" : 129,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/EventKitBridge.swift",
+          "platformGates" : [
+            "watchOS"
+          ],
+          "publicTypes" : [
+            "EventKitBridge"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 122,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/GitService.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+            "GitService"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 46,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/IdeaActions.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "IdeaActions"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+            {
+              "insideGate" : "os(macOS)",
+              "line" : 55,
+              "symbol" : "Process"
+            }
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 83,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/ProcessRunner.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+            "ProcessRunner"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 154,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/PromptService.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "PromptError",
+            "PromptService"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 68,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/ReviewService.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "ReviewService"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 61,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/RunLogService.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "RunLogError",
+            "RunLogService"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 186,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services/SkillsService.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "SkillsService"
+          ]
+        }
+      ],
+      "id" : "kit.services",
+      "layerID" : "service",
+      "name" : "Services",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Services",
+      "publicTypes" : [
+        "ConvertService",
+        "EventKitBridge",
+        "GitService",
+        "IdeaActions",
+        "ProcessRunner",
+        "PromptError",
+        "PromptService",
+        "ReviewService",
+        "RunLogError",
+        "RunLogService",
+        "SkillsService"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 141,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Stats/Aggregations.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "Stats"
+          ]
+        }
+      ],
+      "id" : "kit.stats",
+      "layerID" : "service",
+      "name" : "Stats",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Stats",
+      "publicTypes" : [
+        "Stats"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 60,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/AtomicWrite.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "VaultError"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 58,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/BookmarkStore.swift",
+          "platformGates" : [
+            "macOS"
+          ],
+          "publicTypes" : [
+            "BookmarkStore"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 154,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/CloudSync.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "CloudFileState",
+            "CloudSyncService",
+            "ConflictReport"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 67,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/ConflictPolicy.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "ConflictPolicy"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 57,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/VaultRoot.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "VaultRoot",
+            "VaultWarning"
+          ]
+        },
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation"
+          ],
+          "lines" : 345,
+          "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store/VaultStore.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+            "VaultStore"
+          ]
+        }
+      ],
+      "id" : "kit.store",
+      "layerID" : "data",
+      "name" : "Store",
+      "path" : "apple/LifeWorkflowKit/Sources/LifeWorkflowKit/Store",
+      "publicTypes" : [
+        "BookmarkStore",
+        "CloudFileState",
+        "CloudSyncService",
+        "ConflictPolicy",
+        "ConflictReport",
+        "VaultError",
+        "VaultRoot",
+        "VaultStore",
+        "VaultWarning"
+      ],
+      "target" : "kit"
+    },
+    {
+      "files" : [
+        {
+          "guardedSymbols" : [
+
+          ],
+          "imports" : [
+            "Foundation",
+            "LifeWorkflowKit"
+          ],
+          "lines" : 63,
+          "path" : "apple/LifeWorkflowKit/Sources/archmap-tool/main.swift",
+          "platformGates" : [
+
+          ],
+          "publicTypes" : [
+
+          ]
+        }
+      ],
+      "id" : "kit.tool",
+      "layerID" : "service",
+      "name" : "archmap-tool",
+      "path" : "apple/LifeWorkflowKit/Sources/archmap-tool",
+      "publicTypes" : [
+
+      ],
+      "target" : "tool"
+    }
+  ],
+  "stages" : [
+    {
+      "artifactIDs" : [
+        "vault"
+      ],
+      "id" : "capture",
+      "moduleIDs" : [
+        "app.intents",
+        "kit.services",
+        "kit.store"
+      ],
+      "name" : "捕捉",
+      "order" : 0,
+      "summary" : "随手记、Apple 提醒/日历导入、快捷指令"
+    },
+    {
+      "artifactIDs" : [
+        "cache",
+        "vault"
+      ],
+      "id" : "organize",
+      "moduleIDs" : [
+        "kit.frontmatter",
+        "kit.models",
+        "kit.services",
+        "kit.store"
+      ],
+      "name" : "整理",
+      "order" : 1,
+      "summary" : "想法状态机、思路注释、格式转换"
+    },
+    {
+      "artifactIDs" : [
+        "prompts",
+        "runlog"
+      ],
+      "id" : "execute",
+      "moduleIDs" : [
+        "kit.services"
+      ],
+      "name" : "执行",
+      "order" : 2,
+      "summary" : "提示词重写后交给 agent 执行"
+    },
+    {
+      "artifactIDs" : [
+        "runlog",
+        "skills"
+      ],
+      "id" : "review",
+      "moduleIDs" : [
+        "kit.services",
+        "kit.stats"
+      ],
+      "name" : "复盘",
+      "order" : 3,
+      "summary" : "日志聚合 → 提炼可复用技能"
+    },
+    {
+      "artifactIDs" : [
+        "vault"
+      ],
+      "id" : "archive",
+      "moduleIDs" : [
+        "kit.services"
+      ],
+      "name" : "归档",
+      "order" : 4,
+      "summary" : "commit / push / 里程碑发布"
+    }
+  ]
+}

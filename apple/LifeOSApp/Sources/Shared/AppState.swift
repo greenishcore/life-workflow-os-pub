@@ -28,6 +28,13 @@ final class AppState {
     private(set) var skills: [Skill] = []
     private(set) var proposals: [SkillsService.Proposal] = []
 
+    // 架构地图
+    private(set) var archModel: ArchModel?
+    private(set) var archRisks: [ArchMetrics.ModuleRisk] = []
+    private(set) var archRepo: URL?
+    private(set) var archError: String?
+    private(set) var isLoadingArch = false
+
     /// 需要用户介入的告警（冲突、跨根重名）
     var attentionWarnings: [VaultWarning] { warnings.filter(\.needsAttention) }
 
@@ -100,6 +107,52 @@ final class AppState {
         try? newConfig.ensureDirectories()
         _ = try? newConfig.save()
         await reload()
+    }
+
+    // MARK: 架构地图
+
+    /// 加载架构地图：结构读 archmap.json，指标现算。
+    ///
+    /// 优先读入库的 JSON（与 CI 生成的一致）；读不到就直接从源码提取，
+    /// 这样刚 clone 下来还没跑过 CI 也能看。
+    func loadArchMap(recomputeFromSource: Bool = false) async {
+        #if !os(macOS)
+        // 架构地图是 Mac 端功能：定位仓库要用 GitService（内部起子进程），
+        // 而 iOS 沙盒不允许 fork 子进程 —— 这正是「子进程调用限定 macOS」那条约束
+        archError = "架构地图仅在 macOS 端提供"
+        #else
+        isLoadingArch = true
+        archError = nil
+        defer { isLoadingArch = false }
+
+        let start = config.roots.first.map { URL(fileURLWithPath: $0.path) }
+            ?? URL(fileURLWithPath: NSHomeDirectory())
+        guard let repo = GitService.findRepository(startingAt: start) else {
+            archError = "从 vault 向上没找到 git 仓库，无法定位源码"
+            archModel = nil
+            return
+        }
+        archRepo = repo
+
+        let jsonURL = repo.appendingPathComponent("docs/02-architecture/archmap.json")
+        var model: ArchModel?
+        if !recomputeFromSource, let data = try? Data(contentsOf: jsonURL) {
+            model = try? ArchModel.decode(from: data)
+        }
+        if model == nil {
+            model = try? ArchExtractor.extract(repoRoot: repo).model
+        }
+        guard let model else {
+            archError = "既读不到 archmap.json，也无法从源码提取"
+            archModel = nil
+            return
+        }
+        archModel = model
+
+        let churn = await ArchMetrics.churn(repo: repo, modules: model.modules)
+        archRisks = ArchMetrics.risks(model: model, churn: churn,
+                                      testedModuleIDs: ArchMetrics.testedModuleIDs(model: model))
+        #endif
     }
 
     // MARK: 技能库（主线 4）

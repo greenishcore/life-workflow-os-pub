@@ -47,6 +47,7 @@ struct RootView: View {
     private var detail: some View {
         switch state.selection {
         case .dashboard: DashboardView()
+        case .archmap:   ArchMapView()
         case .capture:   CaptureView()
         case .ideas:     IdeasView()
         case .convert:   ConvertView()
