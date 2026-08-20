@@ -161,13 +161,11 @@ final class AppState {
     /// 把一条随手记提升为带状态机的想法
     @discardableResult
     func promoteToIdea(_ text: String) async -> Item? {
-        let firstLine = text.components(separatedBy: "\n").first ?? text
-        let title = String(firstLine.trimmingCharacters(in: .whitespaces).prefix(60))
+        guard var item = IdeaActions.makeIdea(from: text) else {
+            notify("内容为空")
+            return nil
+        }
         do {
-            var item = try await store.create(
-                title: title.isEmpty ? "未命名想法" : title,
-                type: .idea, status: .seed)
-            item.addThinkingNote("初始想法：\(title)")
             try await store.save(&item)
             notify("已建为想法「\(item.title)」")
             await reload()

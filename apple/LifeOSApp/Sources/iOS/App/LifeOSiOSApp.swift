@@ -27,45 +27,30 @@ struct LifeOSiOSApp: App {
 @MainActor
 @Observable
 final class VaultAccess {
-    static let bookmarkKey = "vault"
-
     private let bookmarks = BookmarkStore()
     private(set) var currentURL: URL?
     private(set) var isExternal = false
     private(set) var message = ""
 
-    /// App 沙盒内的默认 vault
-    static var localFallback: URL {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        return docs.appendingPathComponent("LifeOSVault", isDirectory: true)
-    }
-
     func bootstrap(into state: AppState) async {
-        if let url = await bookmarks.resolve(key: Self.bookmarkKey) {
-            currentURL = url
-            isExternal = true
-            message = "已连接到你选定的目录"
-            await state.useVault(at: url, displayName: url.lastPathComponent)
-            return
-        }
-        let local = Self.localFallback
-        try? FileManager.default.createDirectory(at: local, withIntermediateDirectories: true)
-        currentURL = local
-        isExternal = false
-        message = "使用 App 内置目录（可在「文件」App 里看到）"
-        await state.useVault(at: local, displayName: "本机")
+        // 与 App Intent 走同一套解析逻辑（VaultResolver），保证快捷指令写到的
+        // 和界面看到的是同一个 vault
+        let (url, external) = await VaultResolver.resolve(using: bookmarks)
+        currentURL = url
+        isExternal = external
+        message = external ? "已连接到你选定的目录" : "使用 App 内置目录（可在「文件」App 里看到）"
+        await state.useVault(at: url, displayName: external ? url.lastPathComponent : "本机")
     }
 
     /// 文档选择器选中目录后调用
     func adopt(_ url: URL, into state: AppState) async {
         do {
-            try await bookmarks.save(url, forKey: Self.bookmarkKey)
+            try await bookmarks.save(url, forKey: VaultResolver.bookmarkKey)
         } catch {
             message = "无法记住该目录：\(error.localizedDescription)"
             return
         }
-        guard let resolved = await bookmarks.resolve(key: Self.bookmarkKey) else {
+        guard let resolved = await bookmarks.resolve(key: VaultResolver.bookmarkKey) else {
             message = "该目录暂时无法访问"
             return
         }
@@ -76,7 +61,7 @@ final class VaultAccess {
     }
 
     func reset(into state: AppState) async {
-        await bookmarks.remove(key: Self.bookmarkKey)
+        await bookmarks.remove(key: VaultResolver.bookmarkKey)
         await bootstrap(into: state)
     }
 

@@ -280,3 +280,89 @@ struct ConvertServiceTests {
     }
 }
 #endif
+
+@Suite("想法动作")
+struct IdeaActionsTests {
+
+    @Test("推进会改状态并自动留下思路注释")
+    func advanceRecordsTrace() {
+        var item = Item(title: "甲", id: "a", status: .seed)
+        let result = IdeaActions.advance(&item)
+        #expect(result.didAdvance)
+        #expect(item.status == .sprout)
+        #expect(item.thinkingNotes.count == 1)
+        #expect(item.thinkingNotes[0].note.contains("种子"))
+        #expect(item.thinkingNotes[0].note.contains("发芽"))
+        #expect(!item.updated.isEmpty, "推进属于修改，必须刷新 updated")
+    }
+
+    @Test("已在末态时什么都不改")
+    func advanceAtTerminalIsNoop() {
+        var item = Item(title: "甲", id: "a", status: .archived)
+        let result = IdeaActions.advance(&item)
+        #expect(!result.didAdvance)
+        #expect(item.status == .archived)
+        #expect(item.thinkingNotes.isEmpty, "没推进就不该留注释")
+        #expect(item.updated.isEmpty, "没改动就不该刷新 updated")
+        #expect(result.message.contains("最后一个状态"))
+    }
+
+    @Test("完整走一遍状态机，每步都留痕")
+    func fullStateMachine() {
+        var item = Item(title: "甲", id: "a", status: .seed)
+        var path: [Status] = [item.status]
+        for _ in 0..<6 {
+            IdeaActions.advance(&item)
+            path.append(item.status)
+        }
+        #expect(path.suffix(3) == [.archived, .archived, .archived], "末态后应停住")
+        #expect(item.thinkingNotes.count == 4, "seed→sprout→doing→done→archived 共 4 步")
+    }
+
+    @Test("今日待推进只含推进中与发芽，且按最近活动排序")
+    func todayFocusFilters() {
+        let items = [
+            Item(title: "种子", id: "1", created: "2026-08-19", status: .seed),
+            Item(title: "推进中", id: "2", created: "2026-08-10", status: .doing),
+            Item(title: "发芽", id: "3", created: "2026-08-15", status: .sprout),
+            Item(title: "完成", id: "4", created: "2026-08-18", status: .done),
+        ]
+        let focus = IdeaActions.todayFocus(items, limit: 10)
+        #expect(focus.map(\.title) == ["发芽", "推进中"], "种子与完成都不该出现")
+    }
+
+    @Test("今日待推进遵守条数上限，limit 为 0 时返回空")
+    func todayFocusRespectsLimit() {
+        let items = (1...5).map {
+            Item(title: "第\($0)条", id: "\($0)", created: "2026-08-1\($0)", status: .doing)
+        }
+        #expect(IdeaActions.todayFocus(items, limit: 3).count == 3)
+        #expect(IdeaActions.todayFocus(items, limit: 0).isEmpty)
+        #expect(IdeaActions.todayFocus([], limit: 3).isEmpty)
+    }
+
+    @Test("从随手记提升为想法：标题取首行，余下进正文")
+    func makeIdeaFromText() throws {
+        let item = try #require(IdeaActions.makeIdea(from: "把周复盘自动化\n从日志聚合错误 TopN"))
+        #expect(item.title == "把周复盘自动化")
+        #expect(item.status == .seed)
+        #expect(item.body.contains("从日志聚合错误 TopN"))
+        #expect(item.thinkingNotes.count == 1)
+        #expect(item.thinkingNotes[0].note.contains("初始想法"))
+    }
+
+    @Test("超长首行会被截断，空文本不产生想法")
+    func makeIdeaEdgeCases() throws {
+        #expect(IdeaActions.makeIdea(from: "   \n  ") == nil)
+        #expect(IdeaActions.makeIdea(from: "") == nil)
+        let long = String(repeating: "长", count: 200)
+        let item = try #require(IdeaActions.makeIdea(from: long))
+        #expect(item.title.count == 60)
+    }
+
+    @Test("可以指定初始思路注释")
+    func makeIdeaWithCustomNote() throws {
+        let item = try #require(IdeaActions.makeIdea(from: "标题", firstNote: "因为看到某篇文章"))
+        #expect(item.thinkingNotes[0].note == "因为看到某篇文章")
+    }
+}

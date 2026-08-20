@@ -7,11 +7,9 @@ struct TodayView: View {
     @State private var quickText = ""
     @FocusState private var quickFocused: Bool
 
-    /// 待推进 = 推进中 / 发芽，按最近活动排序
+    /// 与快捷指令「今天该推进什么」用同一套逻辑，避免两处规则漂移
     private var toAdvance: [Item] {
-        state.items
-            .filter { $0.status == .doing || $0.status == .sprout }
-            .sorted { $0.lastActivity > $1.lastActivity }
+        IdeaActions.todayFocus(state.items, limit: .max)
     }
 
     var body: some View {
@@ -109,12 +107,12 @@ struct TodayView: View {
         }
     }
 
-    /// 推进到下一状态
     private func advance(_ item: Item) async {
         guard var target = state.items.first(where: { $0.id == item.id }) else { return }
-        target.status = target.status.next()
-        target.addThinkingNote("推进到「\(target.status.label)」")
+        let result = IdeaActions.advance(&target)
+        guard result.didAdvance else { state.notify(result.message); return }
         _ = await state.save(&target)
+        state.notify(result.message)
     }
 }
 
